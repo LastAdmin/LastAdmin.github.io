@@ -1,1 +1,33 @@
-<html>
+---
+layout: default
+title: Home
+---
+
+<section class="hero">
+  <p class="hero-eyebrow">Hi, I'm</p>
+  <h1 class="hero-title">{{ site.author }}.</h1>
+  <p class="hero-tagline">{{ site.tagline }}</p>
+  <p class="hero-intro">
+    I work on a mix of software, hardware, and the occasional motor that needs
+    a second life. This site is where I keep a running log of those projects
+    alongside my resume.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ '/projects/' | relative_url }}">See projects →</a>
+    <a class="btn btn-ghost" href="{{ '/resume/' | relative_url }}">Read resume</a>
+  </div>
+</section>
+
+<section class="recent">
+  <div class="section-head">
+    <h2>Recent projects</h2>
+    <a href="{{ '/projects/' | relative_url }}" class="see-all">All projects →</a>
+  </div>
+
+  <div class="project-grid">
+    {% assign recent = site.projects | sort: 'date' | reverse | slice: 0, 3 %}
+    {% for project in recent %}
+      {% include project-card.html project=project %}
+    {% endfor %}
+  </div>
+</section>

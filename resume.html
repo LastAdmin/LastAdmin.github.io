@@ -1,0 +1,73 @@
+---
+layout: default
+title: Resume
+permalink: /resume/
+---
+
+<article class="resume">
+  <header class="resume-head">
+    <h1>{{ site.author }}</h1>
+    <p class="resume-contact">
+      <a href="mailto:{{ site.email }}">{{ site.email }}</a>
+      <span class="dot">·</span>
+      <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener">github.com/{{ site.github_username }}</a>
+    </p>
+    <a class="btn btn-ghost btn-sm" href="{{ '/assets/resume.pdf' | relative_url }}" download>Download PDF</a>
+  </header>
+
+  <section class="resume-section">
+    <h2>About</h2>
+    <p>
+      One- or two-paragraph summary. Who you are, what you do, what you're
+      curious about. Edit this in <code>resume.html</code>.
+    </p>
+  </section>
+
+  <section class="resume-section">
+    <h2>Experience</h2>
+
+    <div class="resume-item">
+      <div class="resume-item-head">
+        <h3>Job Title</h3>
+        <span class="resume-when">2024 — Present</span>
+      </div>
+      <p class="resume-where">Company · City</p>
+      <ul>
+        <li>Bullet describing impact, with a number if you have one.</li>
+        <li>Another bullet. Keep them tight.</li>
+      </ul>
+    </div>
+
+    <div class="resume-item">
+      <div class="resume-item-head">
+        <h3>Previous Title</h3>
+        <span class="resume-when">2021 — 2024</span>
+      </div>
+      <p class="resume-where">Company · City</p>
+      <ul>
+        <li>What you did and the result.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="resume-section">
+    <h2>Education</h2>
+    <div class="resume-item">
+      <div class="resume-item-head">
+        <h3>Degree / Programme</h3>
+        <span class="resume-when">Year — Year</span>
+      </div>
+      <p class="resume-where">Institution</p>
+    </div>
+  </section>
+
+  <section class="resume-section">
+    <h2>Skills</h2>
+    <ul class="skills">
+      <li>Languages: ...</li>
+      <li>Tools: ...</li>
+      <li>Hardware: ...</li>
+      <li>Languages spoken: ...</li>
+    </ul>
+  </section>
+</article>

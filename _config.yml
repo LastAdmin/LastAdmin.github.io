@@ -1,0 +1,39 @@
+title: Yannick Morgenthaler
+tagline: Builder of things — code, hardware, and everything in between.
+description: >-
+  Personal portfolio. Code projects, hardware builds, and a running log
+  of whatever I'm working on.
+author: Yannick Morgenthaler
+email: yannick.morgenthaler@4058.net
+github_username: LastAdmin
+
+url: "https://lastadmin.github.io"
+baseurl: ""
+
+markdown: kramdown
+highlighter: rouge
+permalink: /:title/
+
+collections:
+  projects:
+    output: true
+    permalink: /projects/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: projects
+    values:
+      layout: project
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .sass-cache
+  - .jekyll-cache
+  - node_modules
+
+sass:
+  style: compressed

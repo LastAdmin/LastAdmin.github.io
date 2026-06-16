@@ -1,0 +1,42 @@
+---
+layout: default
+title: Projects
+permalink: /projects/
+---
+
+<section class="page-head">
+  <h1>Projects</h1>
+  <p>Everything I've worked on — software, websites, and physical builds.</p>
+</section>
+
+{% assign categories = site.projects | map: "category" | uniq | sort %}
+<div class="filter-bar" id="filterBar">
+  <button class="filter-chip active" data-filter="all">All</button>
+  {% for cat in categories %}
+    {% if cat %}<button class="filter-chip" data-filter="{{ cat | downcase | replace: ' ', '-' }}">{{ cat }}</button>{% endif %}
+  {% endfor %}
+</div>
+
+<div class="project-grid" id="projectGrid">
+  {% assign sorted = site.projects | sort: 'date' | reverse %}
+  {% for project in sorted %}
+    <div class="grid-item" data-category="{{ project.category | downcase | replace: ' ', '-' }}">
+      {% include project-card.html project=project %}
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+  const chips = document.querySelectorAll('.filter-chip');
+  const items = document.querySelectorAll('.grid-item');
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const f = chip.dataset.filter;
+      items.forEach(item => {
+        item.style.display = (f === 'all' || item.dataset.category === f) ? '' : 'none';
+      });
+    });
+  });
+</script>

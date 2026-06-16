@@ -1,0 +1,17 @@
+<a class="project-card" href="{{ include.project.url | relative_url }}">
+  {% if include.project.cover %}
+    <div class="card-cover" style="background-image: url('{{ include.project.cover | relative_url }}');"></div>
+  {% else %}
+    <div class="card-cover card-cover-placeholder">
+      <span>{{ include.project.title | slice: 0, 1 }}</span>
+    </div>
+  {% endif %}
+  <div class="card-body">
+    {% if include.project.category %}
+      <span class="project-category {{ include.project.category | downcase | replace: ' ', '-' }}">{{ include.project.category }}</span>
+    {% endif %}
+    <h3>{{ include.project.title }}</h3>
+    {% if include.project.summary %}<p>{{ include.project.summary }}</p>{% endif %}
+    {% if include.project.date %}<time>{{ include.project.date | date: "%b %Y" }}</time>{% endif %}
+  </div>
+</a>
