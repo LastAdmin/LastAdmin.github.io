@@ -12,6 +12,6 @@
     {% endif %}
     <h3>{{ include.project.title }}</h3>
     {% if include.project.summary %}<p>{{ include.project.summary }}</p>{% endif %}
-    {% if include.project.date %}<time>{{ include.project.date | date: "%b %Y" }}</time>{% endif %}
+    {% if include.project.date %}<time>{{ include.project.date | date: "%m.%Y" }}</time>{% endif %}
   </div>
 </a>

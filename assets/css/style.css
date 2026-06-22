@@ -74,7 +74,14 @@ pre code { background: none; padding: 0; }
 }
 
 /* Hero */
-.hero { padding: 2rem 0 4rem; }
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3rem;
+  align-items: center;
+  padding: 2rem 0 4rem;
+}
+.hero-text { min-width: 0; }
 .hero-eyebrow { color: var(--text-dim); margin: 0 0 .25rem; font-size: 1rem; }
 .hero-title { margin: 0 0 .5rem; }
 .hero-title::after { content: ''; display: inline-block; width: .35ch; height: 1em; background: var(--accent); margin-left: .1ch; vertical-align: -.1em; animation: blink 1.1s infinite; }
@@ -82,6 +89,29 @@ pre code { background: none; padding: 0; }
 .hero-tagline { font-size: 1.25rem; color: var(--text); margin: .5rem 0 1.5rem; max-width: 38ch; }
 .hero-intro { color: var(--text-dim); max-width: 60ch; }
 .hero-actions { display: flex; gap: .75rem; margin-top: 2rem; flex-wrap: wrap; }
+
+/* Hero photo / avatar */
+.hero-photo { display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+.avatar {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--bg-elev-2), var(--bg-elev));
+  border: 2px dashed var(--border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-placeholder {
+  font-family: var(--font-mono);
+  font-size: 3.5rem; font-weight: 600;
+  color: var(--text-faint);
+  letter-spacing: .05em;
+}
+.avatar-caption {
+  margin: 0; font-size: .75rem; color: var(--text-faint);
+  font-family: var(--font-mono); letter-spacing: .05em; text-transform: uppercase;
+}
 
 /* Buttons */
 .btn {
@@ -165,9 +195,9 @@ pre code { background: none; padding: 0; }
 .project-category.code { background: #79c0ff22; color: #79c0ff; }
 .project-category.web { background: #a5d6ff22; color: #a5d6ff; }
 .project-category.hardware { background: #ff7a3d22; color: #ff7a3d; }
-.project-category.motorcycle { background: #f2cc6022; color: #f2cc60; }
-.project-category.electronics { background: #56d3a722; color: #56d3a7; }
-.project-category.writing { background: #d2a8ff22; color: #d2a8ff; }
+.project-category.motorrad { background: #f2cc6022; color: #f2cc60; }
+.project-category.elektronik { background: #56d3a722; color: #56d3a7; }
+.project-category.texte { background: #d2a8ff22; color: #d2a8ff; }
 
 /* Project detail */
 .project-detail { max-width: 760px; margin: 0 auto; }
@@ -234,6 +264,13 @@ pre code { background: none; padding: 0; }
 .recent { margin-top: 3rem; }
 
 /* Responsive */
+@media (max-width: 800px) {
+  .hero { grid-template-columns: 1fr; gap: 2rem; }
+  .hero-photo { order: -1; align-items: flex-start; }
+  .avatar { width: 140px; height: 140px; }
+  .avatar-placeholder { font-size: 2.25rem; }
+}
+
 @media (max-width: 600px) {
   .site-main { padding: 2rem 1.25rem 4rem; }
   .site-nav { padding: .85rem 1.25rem; }

@@ -1,27 +1,40 @@
 ---
 layout: default
-title: Home
+title: Start
 ---
 
 <section class="hero">
-  <p class="hero-eyebrow">Hi, I'm</p>
-  <h1 class="hero-title">{{ site.author }}.</h1>
-  <p class="hero-tagline">{{ site.tagline }}</p>
-  <p class="hero-intro">
-    I work on a mix of software, hardware, and the occasional motor that needs
-    a second life. This site is where I keep a running log of those projects
-    alongside my resume.
-  </p>
-  <div class="hero-actions">
-    <a class="btn btn-primary" href="{{ '/projects/' | relative_url }}">See projects →</a>
-    <a class="btn btn-ghost" href="{{ '/resume/' | relative_url }}">Read resume</a>
+  <div class="hero-text">
+    <p class="hero-eyebrow">Hallo, ich bin</p>
+    <h1 class="hero-title">{{ site.author }}.</h1>
+    <p class="hero-tagline">{{ site.tagline }}</p>
+    <p class="hero-intro">
+      Ich arbeite an einer Mischung aus Software, Hardware und gelegentlich
+      einem Motor, der ein zweites Leben braucht. Auf dieser Seite führe
+      ich ein laufendes Protokoll dieser Projekte zusammen mit meinem
+      Lebenslauf.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ '/projects/' | relative_url }}">Projekte ansehen →</a>
+      <a class="btn btn-ghost" href="{{ '/resume/' | relative_url }}">Lebenslauf lesen</a>
+    </div>
+  </div>
+
+  <div class="hero-photo">
+    <div class="avatar">
+      <!-- Foto hinzufügen: lege eine Datei unter assets/images/me.jpg ab
+           und ersetze das <span> unten durch:
+           <img src="{{ '/assets/images/me.jpg' | relative_url }}" alt="Foto von {{ site.author }}"> -->
+      <span class="avatar-placeholder">YM</span>
+    </div>
+    <p class="avatar-caption">Foto folgt</p>
   </div>
 </section>
 
 <section class="recent">
   <div class="section-head">
-    <h2>Recent projects</h2>
-    <a href="{{ '/projects/' | relative_url }}" class="see-all">All projects →</a>
+    <h2>Aktuelle Projekte</h2>
+    <a href="{{ '/projects/' | relative_url }}" class="see-all">Alle Projekte →</a>
   </div>
 
   <div class="project-grid">

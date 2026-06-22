@@ -1,9 +1,9 @@
 ---
-title: Example Code Project
+title: Beispiel-Code-Projekt
 category: Code
 date: 2025-12-01
-status: Shipped
-summary: A short pitch — what it is and why it exists.
+status: Ausgeliefert
+summary: Ein kurzer Pitch — was es ist und warum es existiert.
 tech:
   - Python
   - FastAPI
@@ -11,23 +11,23 @@ tech:
 repo: https://github.com/LastAdmin/example
 ---
 
-## The problem
+## Das Problem
 
-A paragraph on the itch you scratched.
+Ein Absatz zum Juckreiz, den du gekratzt hast.
 
-## What it does
+## Was es macht
 
-- Bullet of capability 1
-- Bullet of capability 2
-- Bullet of capability 3
+- Stichpunkt zu Funktion 1
+- Stichpunkt zu Funktion 2
+- Stichpunkt zu Funktion 3
 
-## How it's built
+## Wie es gebaut ist
 
-Two or three paragraphs on the architecture. Diagrams welcome — drop them
-in `assets/images/projects/` and reference them with
-`![alt text](/assets/images/projects/your-image.png)`.
+Zwei bis drei Absätze zur Architektur. Diagramme willkommen — leg sie in
+`assets/images/projects/` ab und referenziere sie mit
+`![Beschreibung](/assets/images/projects/dein-bild.png)`.
 
-## What I learned
+## Was ich gelernt habe
 
-Optional but useful: the one or two things you'd carry forward to the next
-project.
+Optional, aber nützlich: die ein, zwei Sachen, die du ins nächste Projekt
+mitnehmen würdest.

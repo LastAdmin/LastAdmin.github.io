@@ -1,53 +1,67 @@
 # LastAdmin.github.io
 
-Personal portfolio. Jekyll site, hosted on GitHub Pages — no build step on your
-machine, GitHub compiles it on every push.
+Persönliches Portfolio. Jekyll-Seite, gehostet auf GitHub Pages — kein
+Build-Schritt lokal nötig, GitHub kompiliert bei jedem Push.
 
-Live at: https://lastadmin.github.io
+Live unter: https://lastadmin.github.io
 
-## Adding a project
+## Ein Projekt hinzufügen
 
-1. Create a new file in `_projects/`, e.g. `_projects/my-thing.md`
-2. Copy the front matter from any existing project and edit it
-3. Write the body in markdown
-4. Drop any images into `assets/images/projects/` and reference them as
-   `/assets/images/projects/your-image.jpg`
-5. Commit and push — the site rebuilds in ~30 seconds
+1. Neue Datei in `_projects/` anlegen, z. B. `_projects/mein-ding.md`
+2. Front Matter aus einem bestehenden Projekt kopieren und anpassen
+3. Inhalt in Markdown schreiben
+4. Bilder in `assets/images/projects/` ablegen und referenzieren als
+   `/assets/images/projects/dein-bild.jpg`
+5. Committen und pushen — die Seite wird in ca. 30 Sekunden neu gebaut
 
-Front matter fields:
+Front-Matter-Felder:
 
-| field      | required | example                                      |
-|------------|----------|----------------------------------------------|
-| `title`    | yes      | `My Thing`                                   |
-| `category` | yes      | `Code` · `Web` · `Hardware` · `Motorcycle` · `Electronics` · `Writing` |
-| `date`     | yes      | `2026-06-16` (controls ordering)             |
-| `summary`  | yes      | one-line description shown on the card       |
-| `status`   | no       | `Shipped`, `In progress`, `Archived`         |
-| `tech`     | no       | YAML list: `[Python, Postgres]`              |
-| `cover`    | no       | `/assets/images/projects/thing.jpg`          |
-| `repo`     | no       | `https://github.com/...`                     |
-| `url_live` | no       | `https://...`                                |
+| Feld       | Pflicht | Beispiel                                          |
+|------------|---------|---------------------------------------------------|
+| `title`    | ja      | `Mein Ding`                                       |
+| `category` | ja      | `Code` · `Web` · `Hardware` · `Motorrad` · `Elektronik` · `Texte` |
+| `date`     | ja      | `2026-06-16` (steuert die Reihenfolge)            |
+| `summary`  | ja      | Einzeiler, der auf der Karte erscheint            |
+| `status`   | nein    | `Live`, `Laufend`, `Archiviert`                   |
+| `tech`     | nein    | YAML-Liste: `[Python, Postgres]`                  |
+| `cover`    | nein    | `/assets/images/projects/ding.jpg`                |
+| `repo`     | nein    | `https://github.com/...`                          |
+| `url_live` | nein    | `https://...`                                     |
 
-Adding a new `category` value is free — it becomes a filter chip on the
-projects page automatically. To give it a custom colour, add a `.project-category.your-cat`
-rule in `assets/css/style.css`.
+Eine neue `category` einzuführen ist gratis — sie erscheint automatisch
+als Filter-Chip auf der Projektseite. Für eine eigene Farbe eine Regel
+`.project-category.deine-kat` in `assets/css/style.css` ergänzen.
 
-## Editing the rest
+## Foto von dir einfügen
 
-- `index.html` — landing page copy
-- `resume.html` — resume content
-- `_config.yml` — site title, tagline, email, GitHub username
-- `assets/css/style.css` — all styling
+In `index.html` ist im Hero-Bereich ein Avatar-Platzhalter (die zwei
+Initialen „YM" in einem gestrichelten Kreis). Um dein Foto einzufügen:
 
-## Local preview (optional)
+1. Lege deine Bilddatei unter `assets/images/me.jpg` ab
+2. In `index.html` das `<span class="avatar-placeholder">YM</span>`
+   ersetzen durch:
+   ```html
+   <img src="{{ '/assets/images/me.jpg' | relative_url }}" alt="Foto von {{ site.author }}">
+   ```
+3. Die Zeile `<p class="avatar-caption">Foto folgt</p>` kannst du dann
+   löschen
 
-GitHub Pages compiles on push, so this is only if you want to preview
-changes before pushing.
+## Restliche Inhalte bearbeiten
+
+- `index.html` — Text der Startseite
+- `resume.html` — Lebenslauf-Inhalte
+- `_config.yml` — Titel, Tagline, E-Mail, GitHub-Benutzername
+- `assets/css/style.css` — komplettes Styling
+
+## Lokale Vorschau (optional)
+
+GitHub Pages baut beim Push, das hier brauchst du nur, wenn du Änderungen
+vor dem Push ansehen willst.
 
 ```sh
 gem install bundler jekyll
-bundle init && bundle add jekyll
+bundle install
 bundle exec jekyll serve
 ```
 
-Then open http://localhost:4000.
+Danach http://localhost:4000 öffnen.

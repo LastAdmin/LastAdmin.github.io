@@ -1,9 +1,9 @@
 ---
-title: This Portfolio
+title: Dieses Portfolio
 category: Web
 date: 2026-06-16
 status: Live
-summary: The site you're looking at — Jekyll on GitHub Pages, markdown-driven.
+summary: Die Seite, die du gerade siehst — Jekyll auf GitHub Pages, markdown-getrieben.
 tech:
   - Jekyll
   - HTML
@@ -13,39 +13,39 @@ repo: https://github.com/LastAdmin/LastAdmin.github.io
 url_live: https://lastadmin.github.io
 ---
 
-## Why
+## Warum
 
-I wanted one place to keep a running log of the things I work on, without a
-CMS to babysit. Jekyll on GitHub Pages was the obvious answer: drop a
-markdown file into `_projects/`, push, done.
+Ich wollte einen Ort, an dem ich ein laufendes Protokoll meiner Projekte
+führe, ohne ein CMS zu hüten. Jekyll auf GitHub Pages war die naheliegende
+Antwort: eine Markdown-Datei nach `_projects/` legen, pushen, fertig.
 
 ## Stack
 
-- **Jekyll** — static site generator, built into GitHub Pages
-- **Vanilla CSS** — no frameworks, one stylesheet
-- **No JavaScript build step** — the only JS on the site is the filter chips
-  on the projects page
+- **Jekyll** — statischer Site-Generator, in GitHub Pages eingebaut
+- **Vanilla CSS** — keine Frameworks, ein Stylesheet
+- **Kein JavaScript-Build** — das einzige JS auf der Seite sind die
+  Filter-Chips auf der Projektseite
 
-## Adding a project
+## Ein Projekt hinzufügen
 
-Create a new file under `_projects/`, copy the front matter from any
-existing project, write the body in markdown, commit. GitHub rebuilds the
-site automatically.
+Eine neue Datei unter `_projects/` anlegen, das Front Matter aus einem
+bestehenden Projekt übernehmen, den Inhalt in Markdown schreiben, committen.
+GitHub baut die Seite automatisch neu.
 
 ```yaml
 ---
-title: My Thing
-category: Code        # or Web, Hardware, Motorcycle, Electronics, Writing
+title: Mein Ding
+category: Code        # oder Web, Hardware, Motorrad, Elektronik, Texte
 date: 2026-06-16
 status: Live
-summary: One-line description that shows on the card.
+summary: Einzeiler, der auf der Karte angezeigt wird.
 tech: [Python, Postgres]
-cover: /assets/images/projects/thing.jpg
-repo: https://github.com/me/thing
+cover: /assets/images/projects/ding.jpg
+repo: https://github.com/me/ding
 url_live: https://example.com
 ---
 
-Then the body of the project in markdown.
+Danach folgt der Inhalt des Projekts in Markdown.
 ```
 
-That's the whole CMS.
+Das ist das ganze CMS.

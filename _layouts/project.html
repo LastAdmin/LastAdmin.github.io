@@ -2,7 +2,7 @@
 layout: default
 ---
 <article class="project-detail">
-  <a href="{{ '/projects/' | relative_url }}" class="back-link">← All projects</a>
+  <a href="{{ '/projects/' | relative_url }}" class="back-link">← Alle Projekte</a>
 
   <header class="project-header">
     {% if page.category %}<span class="project-category {{ page.category | downcase | replace: ' ', '-' }}">{{ page.category }}</span>{% endif %}
@@ -10,7 +10,7 @@ layout: default
     {% if page.summary %}<p class="project-summary">{{ page.summary }}</p>{% endif %}
 
     <dl class="project-meta">
-      {% if page.date %}<dt>Date</dt><dd>{{ page.date | date: "%B %Y" }}</dd>{% endif %}
+      {% if page.date %}<dt>Datum</dt><dd>{{ page.date | date: "%m.%Y" }}</dd>{% endif %}
       {% if page.status %}<dt>Status</dt><dd>{{ page.status }}</dd>{% endif %}
       {% if page.tech %}<dt>Stack</dt><dd>{{ page.tech | join: ", " }}</dd>{% endif %}
       {% if page.repo %}<dt>Repo</dt><dd><a href="{{ page.repo }}" target="_blank" rel="noopener">{{ page.repo | remove: 'https://' }}</a></dd>{% endif %}

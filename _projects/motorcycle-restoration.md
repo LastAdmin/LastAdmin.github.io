@@ -1,41 +1,42 @@
 ---
-title: Motorcycle Restoration
-category: Motorcycle
+title: Motorrad-Restauration
+category: Motorrad
 date: 2025-09-01
-status: In progress
-summary: Bringing a tired old bike back to life — frame off, engine out, the works.
+status: Laufend
+summary: Ein altes, müdes Motorrad zurück ins Leben holen — Rahmen abgebaut, Motor raus, das ganze Programm.
 tech:
-  - Mechanical
-  - Welding
-  - Electrical
-# cover: /assets/images/projects/motorcycle.jpg  # drop a jpg in assets/images/projects/ and uncomment
+  - Mechanik
+  - Schweissen
+  - Elektrik
+# cover: /assets/images/projects/motorrad.jpg  # Bild in assets/images/projects/ ablegen und einkommentieren
 ---
 
-## The bike
+## Das Motorrad
 
-Short description of the bike — make, model, year, and the state you found
-it in. A photo of the "before" goes a long way here.
+Kurzbeschreibung des Motorrads — Marke, Modell, Baujahr und der Zustand,
+in dem du es gefunden hast. Ein „Vorher"-Foto ist hier Gold wert.
 
 ## Plan
 
-- Strip down to the frame
-- Engine inspection and rebuild
-- Wiring loom from scratch
-- Paint and reassembly
+- Abbau bis auf den Rahmen
+- Motorinspektion und Überholung
+- Kabelbaum von Grund auf neu
+- Lackierung und Wiederzusammenbau
 
-## Progress log
+## Fortschrittsprotokoll
 
-### Phase 1 — Teardown
-What came off, what you found, what surprised you.
+### Phase 1 — Demontage
+Was abkam, was du gefunden hast, was dich überrascht hat.
 
-### Phase 2 — Engine
-Cylinders, pistons, timing — keep notes here so future-you knows what was
-torqued to what.
+### Phase 2 — Motor
+Zylinder, Kolben, Steuerzeiten — Notizen hier festhalten, damit das
+Zukunfts-Ich weiss, was mit welchem Drehmoment angezogen wurde.
 
-### Phase 3 — Electrics
-Diagram of the new loom. A picture of a hand-drawn wiring sketch is fine.
+### Phase 3 — Elektrik
+Schema des neuen Kabelbaums. Ein Foto einer handgezeichneten Skizze
+reicht völlig.
 
-## Lessons
+## Erkenntnisse
 
-A few sentences on what you'd do differently. Or what you finally figured
-out the hard way.
+Ein paar Sätze dazu, was du beim nächsten Mal anders machen würdest.
+Oder was du auf die harte Tour gelernt hast.
