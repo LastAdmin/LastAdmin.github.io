@@ -1,9 +1,9 @@
 ---
-title: Technische Dokumentation
+title: Technische Referenz
 parent: ecu_reverse_engineering_blog
 order: 1
 date: 2026-06-01
-summary: Alles abgebaut, beschriftet, sortiert.
+summary: Adressen, Funktionen, Speicherlayout
 ---
 
 # Ducati 848 — IAW 5AM HW610: Technische Firmware-Dokumentation

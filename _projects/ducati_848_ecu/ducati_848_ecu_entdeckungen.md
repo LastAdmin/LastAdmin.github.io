@@ -1,9 +1,9 @@
 ---
-title: Technische Dokumentation
+title: Entdeckungen - chronologisch
 parent: ecu_reverse_engineering_blog
 order: 1
 date: 2026-06-01
-summary: Alles abgebaut, beschriftet, sortiert.
+summary: der weg durch Ghidra, Fund für Fund
 ---
 
 # Ducati 848 — IAW 5AM HW610 ECU: Entdeckungshistorie
