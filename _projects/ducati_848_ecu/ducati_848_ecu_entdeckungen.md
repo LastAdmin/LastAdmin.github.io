@@ -1,14 +1,9 @@
 ---
-title: Ducati 848 ECU Reverse Engineering
-category: Motorrad
+title: Technische Dokumentation
+parent: ecu_reverse_engineering_blog
+order: 1
 date: 2026-06-01
-status: Laufend
-summary: Reverse Engineering der Ducati 848 Superbike ECU - Magneti Marelli IAW5AM HW610
-tech:
-  - Elektronik
-  - Reverse Engineering
-  - Ghidra
-# cover: /assets/images/projects/motorrad.jpg  # Bild in assets/images/projects/ ablegen und einkommentieren
+summary: Alles abgebaut, beschriftet, sortiert.
 ---
 
 # Ducati 848 — IAW 5AM HW610 ECU: Entdeckungshistorie

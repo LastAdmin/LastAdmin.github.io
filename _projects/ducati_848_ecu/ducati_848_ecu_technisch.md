@@ -1,8 +1,8 @@
 ---
 title: Technische Dokumentation
-parent: ducati_848_ecu_entdeckungen
+parent: ecu_reverse_engineering_blog
 order: 1
-date: 2025-09-15
+date: 2026-06-01
 summary: Alles abgebaut, beschriftet, sortiert.
 ---
 
