@@ -1,3 +1,16 @@
+---
+title: Motorrad-Restauration
+category: Motorrad
+date: 2025-09-01
+status: Laufend
+summary: Ein altes, müdes Motorrad zurück ins Leben holen — Rahmen abgebaut, Motor raus, das ganze Programm.
+tech:
+  - Mechanik
+  - Schweissen
+  - Elektrik
+# cover: /assets/images/projects/motorrad.jpg  # Bild in assets/images/projects/ ablegen und einkommentieren
+---
+
 # Ducati 848 — IAW 5AM HW610: Technische Firmware-Dokumentation
 
 **BIN:** `Summer_Map_Backup.bin` · **Variante:** `22ADADPSMA1` · **Prozessor:** ST10F269
