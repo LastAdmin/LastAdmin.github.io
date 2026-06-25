@@ -21,7 +21,7 @@ Was beim Zerlegen herauskam, hat mich überrascht. Das angeblich „stockmäßig
 
 Das ist die Kurzfassung. Wie der Aufrufgraph der Leerlaufregelung aussieht, wie man RAM von Flash unterscheidet und wie ich die einzelnen Tabellen Schritt für Schritt aufgespürt habe, steht in der technischen Doku:
 
-- **[Entdeckungen – chronologisch](ducati_848_ecu/ducati_848_ecu_entdeckungen.md)** – der Weg durch Ghidra, Fund für Fund
-- **[Technische Referenz](ducati_848_ecu/ducati_848_ecu_technisch.md)** – Adressen, Funktionen, Speicherlayout
+- **[Entdeckungen – chronologisch](_/projects/ducati_848_ecu/ducati_848_ecu_entdeckungen.md)** – der Weg durch Ghidra, Fund für Fund
+- **[Technische Referenz](_projects/ducati_848_ecu/ducati_848_ecu_technisch.md)** – Adressen, Funktionen, Speicherlayout
 
 Wer es genau wissen will, findet dort alles. Die eigentliche Erkenntnis bleibt aber auch ohne Hex-Dump bestehen: Eine moderne Maschine ist nur so lange eine Blackbox, wie man sie als eine behandelt.
