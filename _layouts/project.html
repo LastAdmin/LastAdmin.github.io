@@ -2,13 +2,23 @@
 layout: default
 ---
 <article class="project-detail">
-  <a href="{{ '/projects/' | relative_url }}" class="back-link">← Alle Projekte</a>
+  {% if page.parent %}
+    {% assign parent = site.projects | where: "slug", page.parent | first %}
+    {% if parent %}
+      <a href="{{ parent.url | relative_url }}" class="back-link">← {{ parent.title }}</a>
+    {% else %}
+      <a href="{{ '/projects/' | relative_url }}" class="back-link">← Alle Projekte</a>
+    {% endif %}
+  {% else %}
+    <a href="{{ '/projects/' | relative_url }}" class="back-link">← Alle Projekte</a>
+  {% endif %}
 
   <header class="project-header">
     {% if page.category %}<span class="project-category {{ page.category | downcase | replace: ' ', '-' }}">{{ page.category }}</span>{% endif %}
     <h1>{{ page.title }}</h1>
     {% if page.summary %}<p class="project-summary">{{ page.summary }}</p>{% endif %}
 
+    {% if page.date or page.status or page.tech or page.repo or page.url_live %}
     <dl class="project-meta">
       {% if page.date %}<dt>Datum</dt><dd>{{ page.date | date: "%m.%Y" }}</dd>{% endif %}
       {% if page.status %}<dt>Status</dt><dd>{{ page.status }}</dd>{% endif %}
@@ -16,6 +26,7 @@ layout: default
       {% if page.repo %}<dt>Repo</dt><dd><a href="{{ page.repo }}" target="_blank" rel="noopener">{{ page.repo | remove: 'https://' }}</a></dd>{% endif %}
       {% if page.url_live %}<dt>Live</dt><dd><a href="{{ page.url_live }}" target="_blank" rel="noopener">{{ page.url_live | remove: 'https://' }}</a></dd>{% endif %}
     </dl>
+    {% endif %}
   </header>
 
   {% if page.cover %}
@@ -25,4 +36,43 @@ layout: default
   <div class="project-body">
     {{ content }}
   </div>
+
+  {%- assign children = site.projects | where: "parent", page.slug -%}
+  {%- if children.size > 0 -%}
+    {%- assign children = children | sort: "order" -%}
+    <nav class="project-chapters">
+      <h3>Kapitel</h3>
+      <ol>
+        {% for child in children %}
+          <li>
+            <a href="{{ child.url | relative_url }}">{{ child.title }}</a>
+            {% if child.summary %}<span class="chapter-summary">{{ child.summary }}</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    </nav>
+  {%- endif -%}
+
+  {%- if page.parent -%}
+    {%- assign siblings = site.projects | where: "parent", page.parent | sort: "order" -%}
+    {%- if siblings.size > 1 -%}
+      {%- for sib in siblings -%}
+        {%- if sib.slug == page.slug -%}
+          {%- assign idx = forloop.index0 -%}
+          {%- assign prev_idx = idx | minus: 1 -%}
+          {%- assign next_idx = idx | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+      <nav class="chapter-nav">
+        {% if prev_idx >= 0 %}
+          {% assign prev = siblings[prev_idx] %}
+          <a href="{{ prev.url | relative_url }}" class="chapter-nav-link prev">← {{ prev.title }}</a>
+        {% else %}<span></span>{% endif %}
+        {% if next_idx < siblings.size %}
+          {% assign next = siblings[next_idx] %}
+          <a href="{{ next.url | relative_url }}" class="chapter-nav-link next">{{ next.title }} →</a>
+        {% endif %}
+      </nav>
+    {%- endif -%}
+  {%- endif -%}
 </article>

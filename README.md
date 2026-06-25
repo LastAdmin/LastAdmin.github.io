@@ -32,6 +32,44 @@ Eine neue `category` einzuführen ist gratis — sie erscheint automatisch
 als Filter-Chip auf der Projektseite. Für eine eigene Farbe eine Regel
 `.project-category.deine-kat` in `assets/css/style.css` ergänzen.
 
+## Ein Projekt mit mehreren Markdown-Dateien
+
+Für grössere Projekte (Restauration mit Phasen, ein Build mit mehreren
+Updates etc.) kannst du Unterseiten anlegen. Das Hauptprojekt zeigt
+automatisch ein Kapitelverzeichnis, jede Unterseite einen „Zurück"-Link
+zum Hauptprojekt sowie Vor/Zurück-Navigation zwischen den Kapiteln. Auf
+der Projektübersicht erscheinen nur die Hauptprojekte.
+
+**Konvention:**
+
+```
+_projects/
+  motorcycle-restoration.md          ← Hauptprojekt
+  motorcycle-restoration/            ← Ordner mit gleichem Namen
+    01-demontage.md                  ← Kapitel
+    02-motor.md
+    03-elektrik.md
+```
+
+Im Front Matter jedes Kapitels:
+
+```yaml
+---
+title: Phase 1 — Demontage
+parent: motorcycle-restoration   # Dateiname (ohne .md) des Hauptprojekts
+order: 1                         # Reihenfolge im Kapitelverzeichnis
+date: 2025-09-15                 # optional, eigenes Datum pro Kapitel
+summary: Einzeiler fürs Verzeichnis.
+---
+```
+
+Das Hauptprojekt selbst braucht *kein* zusätzliches Feld — es ist alles,
+was kein `parent:` gesetzt hat. Die URLs werden automatisch verschachtelt:
+`/projects/motorcycle-restoration/` für das Hauptprojekt,
+`/projects/motorcycle-restoration/01-demontage/` für ein Kapitel.
+
+Ein vollständiges Beispiel liegt unter `_projects/motorcycle-restoration*`.
+
 ## Foto von dir einfügen
 
 In `index.html` ist im Hero-Bereich ein Avatar-Platzhalter (die zwei

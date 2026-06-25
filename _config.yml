@@ -17,7 +17,7 @@ permalink: /:title/
 collections:
   projects:
     output: true
-    permalink: /projects/:name/
+    permalink: /projects/:path/
 
 defaults:
   - scope:

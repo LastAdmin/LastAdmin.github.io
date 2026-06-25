@@ -23,20 +23,9 @@ in dem du es gefunden hast. Ein „Vorher"-Foto ist hier Gold wert.
 - Kabelbaum von Grund auf neu
 - Lackierung und Wiederzusammenbau
 
-## Fortschrittsprotokoll
-
-### Phase 1 — Demontage
-Was abkam, was du gefunden hast, was dich überrascht hat.
-
-### Phase 2 — Motor
-Zylinder, Kolben, Steuerzeiten — Notizen hier festhalten, damit das
-Zukunfts-Ich weiss, was mit welchem Drehmoment angezogen wurde.
-
-### Phase 3 — Elektrik
-Schema des neuen Kabelbaums. Ein Foto einer handgezeichneten Skizze
-reicht völlig.
-
 ## Erkenntnisse
 
 Ein paar Sätze dazu, was du beim nächsten Mal anders machen würdest.
-Oder was du auf die harte Tour gelernt hast.
+
+Die einzelnen Phasen führe ich als Kapitel unten — jede Phase eine
+eigene Markdown-Datei unter `_projects/motorcycle-restoration/`.

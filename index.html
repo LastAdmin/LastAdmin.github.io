@@ -38,7 +38,7 @@ title: Start
   </div>
 
   <div class="project-grid">
-    {% assign recent = site.projects | sort: 'date' | reverse | slice: 0, 3 %}
+    {% assign recent = site.projects | where_exp: "p", "p.parent == nil" | sort: 'date' | reverse | slice: 0, 3 %}
     {% for project in recent %}
       {% include project-card.html project=project %}
     {% endfor %}

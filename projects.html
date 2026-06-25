@@ -9,7 +9,8 @@ permalink: /projects/
   <p>Alles, woran ich gearbeitet habe — Software, Websites und physische Bauten.</p>
 </section>
 
-{% assign categories = site.projects | map: "category" | uniq | sort %}
+{% assign top_level = site.projects | where_exp: "p", "p.parent == nil" %}
+{% assign categories = top_level | map: "category" | uniq | sort %}
 <div class="filter-bar" id="filterBar">
   <button class="filter-chip active" data-filter="all">Alle</button>
   {% for cat in categories %}
@@ -18,7 +19,7 @@ permalink: /projects/
 </div>
 
 <div class="project-grid" id="projectGrid">
-  {% assign sorted = site.projects | sort: 'date' | reverse %}
+  {% assign sorted = top_level | sort: 'date' | reverse %}
   {% for project in sorted %}
     <div class="grid-item" data-category="{{ project.category | downcase | replace: ' ', '-' }}">
       {% include project-card.html project=project %}
