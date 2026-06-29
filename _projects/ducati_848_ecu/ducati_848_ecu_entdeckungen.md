@@ -13,354 +13,445 @@ summary: der weg durch Ghidra, Fund für Fund
 **Prozessor:** STMicroelectronics ST10F269 (C166/ST10-Architektur, 16-Bit)  
 **Reverse-Engineering-Tool:** Ghidra 12.1 + keyhana/c166-ghidra-module v1.1.0
 
-### Technische Dokumentation
-`_projects/motorcycle-restoration/`
+---
+
+# Ducati 848 — IAW 5AM HW610: Entdeckungshistorie
+
+**BIN:** `Summer_Map_Backup.bin` · **Variante:** `22ADADPSMA1`  
+**Prozessor:** STMicroelectronics ST10F269 (C166/ST10, 16-Bit, Little Endian)  
+**Tool:** Ghidra 12.1 + keyhana/c166-ghidra-module v1.1.0
 
 ---
 
-## Chronologie
+## Methodischer Ansatz
 
-### Phase 1 — Grundlagen & bekannte Defekte (vor Ghidra)
+Nach einer ersten explorativen Phase (XREF-getriebene Suche nach bekannten Tabellen)
+wurde der Ansatz auf **Top-Down vom Reset-Vektor** umgestellt. Grund: ohne Verständnis
+des Software-Aufbaus wurden Funktionen falsch eingestuft und RAM-Variablen als
+Flash-Kalibrierdata interpretiert. Die neue Methode folgt dem Ausführungspfad der
+ECU von Anfang an, Funktion für Funktion.
 
-Ausgangspunkt war ein persistentes Idle-Backfire- und Rauhlaufproblem. Durch direkten
-Hex-Analyse des BIN und Abgleich mit bekannten XDF-Dateien wurden folgende Defekte
-im Calibration-Bereich identifiziert:
+---
 
-| Adresse | Tabelle | Befund |
+## Phase 1 — Ausgangslage: Bekannte Defekte (vor Ghidra)
+
+Durch Hex-Analyse des BIN und Abgleich mit XDF-Dateien identifizierte Defekte:
+
+| Adresse (physisch) | Tabelle | Befund |
 |---|---|---|
-| `0x04C300` | Ignition Map | 0° BTDC advance über gesamte idle/low-load Zone — primäre Ursache des Backfires |
-| `0x04A940` | Idle RPM Target | 16 Einträge (1600 RPM kalt → 1450 RPM warm) — strukturell korrekt |
-| `0x04A960` | Idle Temp-Achse | Non-monoton: Werte steigen dann fallen (...120, 140, 120°C) — verhindert korrekte ECU-Interpolation |
+| `0x04C300` | Ignition Map | Bereich idle/low-load = 10° BTDC — zu tief, primäre Backfire-Ursache |
+| `0x04A940` | Idle RPM Target | Strukturell korrekt (1600→1450 RPM) |
+| `0x04A960` | Idle Temp-Achse | Non-monoton (…120, 140, 120°C) — bricht Interpolation |
 | `0x04A93A` | Cold-Start Timer | ~12 Sekunden statt erwarteter 90–180 Sekunden |
-| `0x04A990` | IAC Step Counts | Erster Eintrag: 10 Steps statt erwartetem ~500 — anomal |
 
-Physikalische Massnahme: Throttle-Body Bypass-Screw-Differenz (~60% Imbalance zwischen
-Zylindern) wurde angepasst — verbesserte Idle-Glätte, löste Backfire nicht.
+Praktischer Test: 98 RON Kraftstoff eliminierte Backfires im Standgas — bestätigt
+Zündtiming als primäre Ursache, nicht Gemisch.
 
 ---
 
-### Phase 2 — Ghidra Setup & Import-Problem
+## Phase 2 — Ghidra Setup
 
-**Problem:** Import des BIN mit Plugin v1.2.0 (inoffizieller Build) schlug fehl:
+**Problem:** Plugin v1.2.0 (inoffizieller Build) schlug fehl mit:
 ```
 Unknown pentry register: CP
 ```
+`CP` (Context Pointer) war in `c166.cspec` als Calling-Convention-Register deklariert
+aber nicht korrekt im SLEIGH-Register-Space definiert. Ghidra 12.x validiert cspec strenger.
 
-**Ursache:** `CP` (Context Pointer, physisches ST10-Register) war in der `c166.cspec`
-als Calling-Convention-Parameter-Register deklariert, aber nicht korrekt im SLEIGH
-Register-Space definiert. Ghidra 12.x verschärfte die cspec-Validierung gegenüber 11.x.
-
-**Lösung:** Downgrade auf offizielles Release v1.1.0 (November 2025).
+**Lösung:** Downgrade auf offizielles Release v1.1.0.
 
 ---
 
-### Phase 3 — DPP-Adressschema aufgelöst
+## Phase 3 — Reset-Vektor & Interrupt-Vektor-Tabelle (Top-Down Start)
 
-Der ST10F269 verwendet ein segmentiertes 16-Bit → 24-Bit Speichermodell via
-Data Page Pointer (DPP). Die Init-Sequenz im Reset-Vektor-nahen Code setzt:
+**`0x000000` — Interrupt-Vektor-Tabelle (IVT)**
 
-```
-DPP0 = 0x01   →   physisch 0x004000–0x007FFF
-DPP1 = 0x12   →   physisch 0x048000–0x04BFFF
-DPP2 = 0x13   →   physisch 0x04C000–0x04FFFF
-```
+Die ersten ~0x200 Bytes sind die IVT des ST10F269. Jeder Eintrag = 4 Bytes (`jmps`).
 
-**Formel:** `physisch = (DPP × 0x4000) + (16-Bit-Offset & 0x3FFF)`
+Aktive ISRs (alle anderen zeigen auf Default-Handler `thunk_FUN_02e8cc`):
 
-**Konsequenz für Ghidra:** Tabellenreferenzen erscheinen nicht automatisch, weil
-Ghidra nur den 16-Bit-Offset sieht, nicht die aufgelöste physische Adresse.
-Manuelles Memory-Search nach Little-Endian-Offset-Bytes nötig.
-
-**Umrechnungstabelle für bekannte Adressen:**
-
-| Physische Adresse | DPP | 16-Bit Offset im Code | Suche (LE-Bytes) |
+| IVT-Adresse | Vektor # | Handler | Status |
 |---|---|---|---|
-| `0x04A93A` | DPP1 | `0x693A` | `3A 69` |
-| `0x04A940` | DPP1 | `0x6940` | `40 69` |
-| `0x04A960` | DPP1 | `0x6960` | `60 69` |
-| `0x04A990` | DPP1 | `0x6990` | `90 69` |
-| `0x04C300` | DPP2 | `0x8300` | `00 83` |
+| `0x000000` | Reset | `FUN_000222` | Init-Funktion → analysiert |
+| `0x0000e8` | 58 | `thunk_FUN_022b5c` | unbekannt — zu analysieren |
+| `0x0000ec` | 59 | `thunk_FUN_022d24` | unbekannt — zu analysieren |
+| `0x0000f0` | 60 | `FUN_0040f0` | unbekannt — zu analysieren |
+| `0x0000f8` | 62 | `thunk_FUN_02afe4` | unbekannt — zu analysieren |
+| `0x000100` | 64 | `thunk_FUN_02a0e4` | unbekannt — zu analysieren |
+| `0x000110` | 68 | `thunk_FUN_027a5c` | unbekannt — zu analysieren |
+| `0x00011c` | 71 | `thunk_FUN_02cd70` | unbekannt — zu analysieren |
+
+`thunk_FUN_02e8cc` = Default/Leer-Handler für unbenutzte Interrupts.
 
 ---
 
-### Phase 4 — Erste Code-Referenzen via Memory-Search
+## Phase 4 — FUN_000222: Hardware-Initialisierung
 
-Search nach `00 83` (Offset `0x8300` = Ignition Map) ergab zwei Treffer:
+**Ausführungsreihenfolge nach Reset:**
 
 ```
-021ad8   cmp r12, #DAT_008300
-021c3c   cmp r12, #DAT_008300
+1. Stack initialisieren  (SP, STKOV, STKUN, CP)
+2. DPP-Register setzen   (DPP0=0x01, DPP1=0x12, DPP2=0x13)
+3. FUN_000594            Hardware-Peripherie-Init
+4. FUN_0005a0            zweite Init-Stufe
+5. einit                 Interrupts aktivieren ← ISRs laufen ab hier
+6. FUN_0005a6            Init nach Interrupt-Enable
+7. srvwdt                Watchdog bedienen
+8. FUN_002582            HAUPT-APPLIKATION (läuft endlos)
+   reti                  wird nie erreicht
 ```
 
-Beide in `FUN_021a0e`. Analyse ergab: `0x8300` wird dort **nicht** als
-Tabellen-Lookup verwendet, sondern als **Minimum-IAC-Schrittgrenze** (Clamp).
+**Bestätigt durch FUN_000222:**
+- DPP-Werte (DPP0=0x01, DPP1=0x12, DPP2=0x13) — direkt im Code sichtbar
+- Stack liegt im internen RAM: `0xFA0C`–`0xFC00` (~500 Bytes)
+- Context Pointer: `0xF754`
+- Nächster Analyseschritt: `FUN_000594` (Hardware-Init)
 
 ---
 
-### Phase 5 — Idle Control Call-Graph aufgedeckt
+## Offene Schritte (priorisiert)
 
-Durch XREF-Analyse von `FUN_021a0e` wurde der übergeordnete Aufrufbaum sichtbar:
-
-```
-FUN_0216ce          ← übergeordneter Scheduler/Task-Manager
-  └── FUN_021866    ← Idle Control Dispatcher
-        ├── FUN_0218ba   ← IAC Initialisierung / Referenz-Tabellen-Lookup
-        ├── FUN_021978   ← Idle Fuel Trim Controller  ← NEU
-        └── FUN_021a0e   ← IAC Stepper Motor Controller
-```
-
-**FUN_021866 (Idle Control Dispatcher):**
-- Prüft Idle-Flags (`DAT_00d8c1`, `DAT_00d97f`)
-- Vergleicht Zustandsbytes (`DAT_00d8a5` vs. `DAT_00d8a6`)
-- Ruft bei Zustandsänderung `FUN_0218ba` (Initialisierung) auf
-- Ruft bei normalem Idle `FUN_021978` + `FUN_021a0e` auf
-- Enthält eigenen Tabellen-Lookup: `WORD_ARRAY_006c89` via `FUN_01a7ee`
-
-**FUN_021a0e (IAC Stepper Motor Controller):**
-- Verwaltet drei unabhängige IAC-Kanäle parallel
-- RAM-Zustandsvariablen: `DAT_00d8e7`, `DAT_00d8eb`, `DAT_00d8e9`
-- Ruft `FUN_031a1e` (Schrittmotor-Treiber Hardware-Abstraction) auf
-- Prüft Betriebsmodus via `DAT_00dc8d` (Wert 5 oder 7)
-- Kalibrierparameter aus Flash bei `0x73xx` (DPP1, physisch `0x04Bxxx`)
+1. `FUN_000594` — Hardware-Peripherie-Init
+2. `FUN_0005a0` — zweite Init-Stufe
+3. `FUN_0005a6` — Init nach `einit`
+4. `FUN_002582` — Haupt-Applikation / Task-Scheduler
+5. Die 7 aktiven ISRs identifizieren (Sensor-Lesen, Timer, etc.)
 
 ---
 
-### Phase 6 — Idle Fuel Trim Tabellen entdeckt (NEU)
+## Phase 5 — FUN_000594: Minimale Bus-Konfiguration
 
-**FUN_021978 (Idle Fuel Trim Controller)** analysiert:
+**Funktion:** 3 Instruktionen, 2 Register-Writes.
 
-Funktion führt zwei separate Tabellen-Lookups durch, beide über `FUN_01a6da`
-(generische Interpolationsfunktion):
-
-**Lookup 1 — immer aktiv:**
 ```
-Tabelle:  WORD_ARRAY_006dca   (20 Einträge)
-Achse 1:  DAT_00dc6d          (Sensor-Wert 1)
-Achse 2:  DAT_00dc75          (Sensor-Wert 2)
+extr  #0x1              → Extended-Mode für nächste Instruktion (XSFR-Zugriff)
+mov   0xF024,  #0x000D  → XSFR-Register (Peripherie, noch zu identifizieren)
+mov   SYSCON,  #0x0514  → System Configuration Register
 ```
 
-**Lookup 2 — nur wenn Modus = 7** (`DAT_00d893 == 7`):
-```
-Tabelle:  WORD_ARRAY_006f0a   (20 Einträge)
-Achse 1:  DAT_00dc6d          (gleiche Achsen wie Lookup 1)
-Achse 2:  DAT_00dc75
-```
-
-Ergebnis beider Lookups wird summiert, gegen `DAT_00d8f1` (laufender Trim-Akkumulator)
-addiert und in `DAT_00d88f` (aktueller Idle Fuel Trim Wert) geschrieben.
-
-Grenzen: `DAT_00d8f3` (Minimum), `DAT_00d8f5` (Maximum).
-
-**Status der Tabellen:**
-- `WORD_ARRAY_006dca`: alle Einträge = `0x0000` → RAM-Tabelle, zur Laufzeit befüllt
-- `WORD_ARRAY_006f0a`: alle Einträge = `0x0000` → RAM-Tabelle, zur Laufzeit befüllt
-- `WORD_ARRAY_006c89`: alle Einträge = `0x0000` → RAM-Tabelle, zur Laufzeit befüllt
-
-**Hypothese:** Diese Tabellen sind adaptiv — die ECU lernt Korrekturen und schreibt
-sie ins RAM. Initialisierungswerte kommen aus einer noch zu findenden Flash-Tabelle
-(wahrscheinlich in `FUN_0218ba` oder dessen Callees).
+**SYSCON = 0x0514:** Steuert External-Bus-Timing und Memory-Wait-States.
+Keine komplexe Hardware-Init — nur grundlegende Bus-Konfiguration.
+Echter Hardware-Init wahrscheinlich in `FUN_0005a0`.
 
 ---
 
-## Offene Fragen / Nächste Schritte
+## Phase 5 — FUN_000594 & FUN_0005a0: Hardware-Konfiguration (mit Datenblatt verifiziert)
 
-- [ ] `FUN_0216ce` analysieren — übergeordneter Task-Scheduler, gibt Kontext für alle Idle-Funktionen
-- [ ] `FUN_01a7ee` und `FUN_01a6da` vergleichen — sind das zwei verschiedene Interpolationsalgorithmen?
-- [ ] Initialisierungsquelle der RAM-Tabellen finden (Flash-Default-Werte)
-- [ ] Sensoren `DAT_00dc6d` und `DAT_00dc75` identifizieren (RPM? TPS? MAP?)
-- [ ] AFR Target Idle Tabelle lokalisieren
-- [ ] Decel Fuel Cut Parameter lokalisieren
-- [ ] Kalibrierparameter bei `0x73xx` vollständig kartieren
+**FUN_000594** — 3 Instruktionen, zwei Register-Writes (via `extr` für XSFR-Zugriff):
+
+```
+XPERCON (0xF024h) = 0x000D:
+  Bit 3  XRAM2EN = 1  → 8KB XRAM2 aktiviert (0x00C000–0x00DFFF)
+  Bit 2  XRAM1EN = 1  → 2KB XRAM1 aktiviert (0x00E000–0x00E7FF)
+  Bit 0  CAN1EN  = 1  → CAN1 aktiviert (0x00EF00–0x00EFFF)
+  Bit 1  CAN2EN  = 0  → CAN2 deaktiviert
+  Bit 4  RTCEN   = 0  → RTC deaktiviert
+
+SYSCON (0xFF12h) = 0x0514:
+  Bit 10  ROMEN  = 1  → Interner Flash aktiv
+  Bit  8  CLKEN  = 1  → Clock Enable
+  Bit  4  OWDDIS = 1  → Oscillator Watchdog deaktiviert
+  Bit  2  XPEN   = 1  → X-Peripherals freigegeben (sperrt XPERCON!)
+```
+
+**Wichtig:** XPERCON kann nach XPEN-Setzen in SYSCON nicht mehr geändert werden.
+Reihenfolge XPERCON zuerst, dann SYSCON ist zwingend.
+
+**FUN_0005a0** — 1 Instruktion:
+
+```
+BUSCON0 (0xFF0Ch) = 0x049F:
+  Bit 10  BUSACT0 = 1  → External Bus aktiv
+  Bit 7-6 BTYP    = 10 → 16-bit Demultiplexed Bus
+  Bit  5  MTTC0   = 0  → 1 Memory Tristate Wait State
+  Bit  4  RWDC0   = 1  → Kein R/W-Delay
+  Bit 3-0 MCTC    = 1111 → 0 Wait States (max. Geschwindigkeit)
+```
+
+**Grosse Erkenntnis — RAM-Layout jetzt vollständig klar:**
+
+Alle `DAT_00dxxx`-Variablen die wir in der Idle-Steuerung gesehen haben liegen in
+**XRAM2** (`0x00C000–0x00DFFF`). Die `DAT_00eXxx`-Variablen (IAC-Startpositionen)
+liegen in **XRAM1** (`0x00E000–0x00E7FF`). Das erklärt warum diese Werte im BIN
+als `0xFFFF` erscheinen — es ist initialisierter RAM, kein Flash.
 
 ---
 
-### Phase 7 — State Machine & AFR Targets entdeckt (FUN_0216ce)
+## Phase 6 — FUN_0005a6: Watchdog-Konfiguration
 
-**FUN_0216ce (Idle Mode State Machine Controller)** analysiert:
-
-Übergeordnete Funktion die den Idle-Modus steuert und `FUN_021866` aufruft.
-
-**Neu entdeckt: State-Übergangs-Matrix bei `0x006be6`**
+**Eine Instruktion:** `mov WDTCON, #0xF401`
 
 ```
-021708   movb RL1, [r12 + #DAT_006be5+1]
+WDTCON (0xFFAEh) = 0xF401:
+  Bit 15-8  WDTREL = 0xF4  → Watchdog Reload Value = 244
+  Bit 0     WDTIN  = 1     → Taktteiler fCPU/128
+  → Watchdog-Timeout: ~9.83ms bei 40MHz CPU-Takt
 ```
-2D-Array-Zugriff mit berechneten Indizes aus `DAT_00dc6d` und `DAT_00dc75`.
-Matrixgrösse: 5×N (Multiplikation mit 5 im Index-Berechnung sichtbar).
-Enthält Byte-Werte die den Idle-Betriebsmodus bestimmen.
 
-**Neu entdeckt: AFR/Fuel Target Werte**
+**Konsequenz:** Der gesamte Task-Scheduler in `FUN_002582` muss so ausgelegt
+sein, dass `srvwdt` mindestens alle ~10ms ausgeführt wird. Das definiert die
+maximale Zykluszeit aller periodischen Tasks.
 
-`DAT_00d8ed` ist der Idle Fuel Target Ausgabewert. Er wird aus drei Flash-Adressen
-geladen je nach Betriebszustand:
+**Init-Sequenz jetzt vollständig dokumentiert:**
 
-| Adresse | Physisch | Bedingung |
+| Schritt | Funktion | Was passiert |
 |---|---|---|
-| `0x00704f` | `0x01704f` | Normal-Idle (`DAT_00d8bf == 0`) |
-| `0x007051` | `0x017051` | Zustand Bit 2 gesetzt |
-| `0x007053` | `0x017053` | Zustand Bit 4 gesetzt + Nebenbedingungen |
-
-**Sensoren `DAT_00dc6d` / `DAT_00dc75` teilweise identifiziert:**
-
-Beide werden mit `(Wert + 0x80) >> 8` auf ein Byte normiert und als Matrix-Indizes
-verwendet. Die Normierungsoperation und Verwendung als Lookup-Index deutet auf
-**Temperatursensoren** hin (Kühlwasser + Ansaugluft wahrscheinlich).
-
-**Zwei neue Funktionen zur Analyse:**
-- `FUN_02156c` — Idle-Übergangs-Handler (aufgerufen bei Zustandswechsel)
-- `FUN_021620` — Idle-Entry/Exit-Logik
+| 1 | `FUN_000222` | Stack (SP/STKOV/STKUN/CP), DPP0/1/2 |
+| 2 | `FUN_000594` | XPERCON (XRAM+CAN), SYSCON (Lock+Enable) |
+| 3 | `FUN_0005a0` | BUSCON0 (External Bus 16-bit, 0 Wait States) |
+| 4 | `einit` | Interrupts freigeben |
+| 5 | `FUN_0005a6` | WDTCON (Watchdog ~10ms Timeout) |
+| 6 | `srvwdt` | Erster Watchdog-Service |
+| 7 | `FUN_002582` | Haupt-Applikation (läuft endlos) |
 
 ---
 
-### Phase 8 — Sensor-Schreiber und Task-Scheduler identifiziert
+## Phase 7 — FUN_002582: Applikations-Einstieg & Bootstruktur
 
-**AFR Target Adressen sind RAM, nicht Flash:**
-`0x00704f`, `0x007051`, `0x007053` zeigen `0x0000` (DPP0-Sicht) / `0xFFFF` (physisch).
-`0xFFFF` = "noch nicht initialisiert"-Marker. Die echten AFR-Werte kommen aus einer
-noch unbekannten Flash-Tabelle, wahrscheinlich via `FUN_020e42` (hat Write auf `DAT_00d8ed`).
+**Ausführungsfluss:**
 
-**Sensor-Schreiber lokalisiert:**
-
-`DAT_00dc6d` wird beschrieben von:
-- `FUN_02d92a` bei `0x02d932`
-- `FUN_02d992` bei `0x02d99e`
-
-`DAT_00dc75` wird beschrieben von:
-- `FUN_02d92a` bei `0x02d93e`
-- `FUN_02d9dc` bei `0x02d9e8`
-
-`FUN_02d92a` schreibt beide Sensoren → das ist der primäre Sensor-Einlese-Code.
-Funktionen im `0x02dxxx`-Bereich sind der Sensor-Verarbeitungs-Layer.
-
-**`DAT_00dc75` zusätzlich verwendet von:**
-- `FUN_01c35e`, `FUN_01ca66` → Sensor-Kalibrierung/Konvertierung (`0x01cxxx`-Bereich)
-- `FUN_02c9a4`, `FUN_02f57c` → weitere Steuerungsfunktionen
-
-17 XREFs für `DAT_00dc75` vs. 11 für `DAT_00dc6d` → `DAT_00dc75` ist der wichtigere
-Sensor, wahrscheinlich **Kühlwassertemperatur**.
-
-**`DAT_00d8ed` (Idle Fuel Target) wird gelesen von `FUN_02107e`** (4 Read-Zugriffe) —
-das ist die Funktion die den Fuel Target tatsächlich anwendet/umsetzt.
-
-**FUN_020f60 — Task-Scheduler (sehr einfach):**
 ```
-if DAT_00d893 == 0: return  ← globales Idle-Enable, alles gesperrt wenn 0
-calls FUN_0211f6             ← Sensor-Update VOR Idle-Control
-calls FUN_0216ce             ← Idle State Machine
+1. FUN_0005ac        → Init (unbekannt, vor K-Line)
+2. FUN_0007c6        → Init (unbekannt, vor K-Line)
+3. FUN_0007e2        → K-Line Diagnostic Handler
+   ├── K-Line aktiv  → FUN_0029c0 (K-Line Kommunikations-Loop)
+   └── K-Line inaktiv ↓
+4. DAT_00d853 == 0x10EF? → thunk_FUN_018046 (Bootloader/Flash-Modus, kein Return)
+5. Normal:  FUN_003058 (r12=DAT_00d104, r13=0x3F10, r14=0) → Haupt-Task-Scheduler
+6. FUN_002616 (wahrscheinlich nie erreicht)
 ```
-`FUN_0211f6` aktualisiert wahrscheinlich `DAT_00dc6d`/`DAT_00dc75` bevor sie
-in den Tabellen-Lookups verwendet werden.
 
-**Offene Fragen nach dieser Phase:**
-- `FUN_02d92a` analysieren → Sensor-Identifikation definitiv klären
-- `FUN_0211f6` analysieren → Sensor-Vorverarbeitung verstehen
-- `FUN_020e42` analysieren → woher kommen die echten AFR-Target-Werte?
-- `FUN_02107e` analysieren → wie wird `DAT_00d8ed` (Fuel Target) angewendet?
+**Magic-Value `0x10EF`:**
+`DAT_00d853` (in XRAM2) wird auf `0x10EF` verglichen. Wenn gesetzt →
+`thunk_FUN_018046` ohne Return. Klassischer Automotive-Bootloader-Trigger.
+Wird wahrscheinlich über K-Line-Protokoll von aussen gesetzt.
+
+**`FUN_003058` — Haupt-Task-Scheduler:**
+Parameter:
+- `r12 = DAT_00d104` → Task-Control-Tabelle (in XRAM2)
+- `r13 = 0x3F10` → Task-Liste (im Flash, Segment 0)
+- `r14 = 0x0` → Startwert/Counter
+
+Das ist die wichtigste Funktion der gesamten ECU-Software.
+Dort sind alle periodischen Tasks definiert.
 
 ---
 
-### Phase 9 — Idle-Initialisierung vollständig kartiert (FUN_020e42)
+## Phase 8 — FUN_003058: Control-Block-Initialisierung (nicht der Haupt-Loop)
 
-**FUN_02d92a ist kein Sensor-Leser, sondern Reset-Funktion:**
-Setzt Sensor-Datenblock `0x00dc69`–`0x00dc81` (13 Wörter = 13 Sensor-Kanäle) auf null.
-Setzt Abschluss-Flag `DAT_00dc85 = 0x01`. Echte ADC-Einlese-Funktionen sind
-`FUN_02d992` und `FUN_02d9dc` (noch zu analysieren).
+**FUN_003058** ist eine Initialisierungsroutine für einen Task-Control-Block,
+**nicht** die Haupt-Task-Loop.
 
-**FUN_020e42 ist die Idle-System-Initialisierung:**
-Aufgerufen beim Motorstart von drei verschiedenen Stellen (`FUN_019660`, `FUN_0196b6`,
-`FUN_0196e0`). Setzt alle Idle-RAM-Variablen auf Startwerte und kopiert Flash-Defaults ins RAM.
+```
+Parameter:
+  param_1 (r12) = Zeiger auf Control-Block (DAT_00d104, in XRAM2)
+  param_2 (r13) = Task-Liste (0x3F10, Flash)
+  param_3 (r14) = Startwert (0x0)
 
-**Neu entdeckte Flash-Adressen:**
+Ablauf:
+  if param_2|param_3 != 0 → FUN_002f9a + FUN_0006d2 (Re-Init/Cleanup)
+  Initialisiert Control-Block-Felder auf 0
+  control_block[0x38] = 0x28A0  (= 10400 — evtl. Puffergrösse/Timer)
+  FUN_002f6a(0xFA)              (= 250 — Timer oder Delay)
+```
 
-| Adresse | Verwendung |
+Control-Block-Grösse: mindestens 0x75+1 Bytes. Wird von 4 Stellen aufgerufen.
+
+**Korrektur der Analyse von FUN_002582:**  
+Die eigentliche Haupt-Task-Loop ist **FUN_002616**, nicht FUN_003058.
+
+Neue Priorität: FUN_002616 analysieren.
+
+---
+
+## Phase 9 — FUN_002616: Haupt-Loop aufgedeckt
+
+**Struktur:** Polling-basierte Haupt-Loop mit Timer-getriebenem Task-Executor.
+
+```
+Init: FUN_00098a, Flags DAT_00d863/DAT_00d864 = 0
+
+LOOP (LAB_002622):
+  S0RIC.bit7?  → FUN_003398    ← UART0 K-Line Daten verarbeiten
+  FUN_0007d0   → FUN_002574    ← unbekannte Bedingung
+  DAT_00d863 == 0? → LOOP      ← enge Schleife bis Timer-Flag gesetzt
+  DAT_00d175 != 0? → LOOP      ← zweite Bedingung
+  State-Machine (DAT_00d17b)   ← Boot-Sequenz
+  FUN_0026e4(DAT_00d104)       ← HAUPT-TASK-EXECUTOR
+  → LOOP
+```
+
+**Erkenntnisse:**
+
+`S0RIC` (SFR 0xFF8A): UART0 Receive Interrupt Control Register.
+Bit 7 = IR-Flag. Wird gepollt, kein ISR → K-Line-Kommunikation ist polling-basiert.
+`FUN_003398` = UART0/K-Line Datenverarbeitungs-Funktion.
+
+`DAT_00d863` = Timer-getriebenes Task-Trigger-Flag. Wird von einem Timer-ISR
+(aus der IVT) gesetzt. Verbindet ISRs mit dem Task-Executor.
+
+`FUN_0026e4` = eigentlicher Task-Executor. Bekommt Control-Block-Pointer
+(DAT_00d104). Führt alle periodischen Tasks aus. Nächste Priorität.
+
+**Boot-State-Machine (`DAT_00d17b`):**
+
+| Zustand | Funktion | Übergang |
+|---|---|---|
+| 0x03 | FUN_000940, FUN_00068c, FUN_000a24 | → 0x14 oder 0x16 |
+| 0x07 | FUN_000650(0x3F, 0x7F), FUN_0005f6 | → 0x08 |
+| 0x08 | Normal-Betrieb | → FUN_0026e4 |
+| 0x18 | FUN_0024b2, FUN_000650(0xB, 0x3F) | → 0x19 |
+
+---
+
+## Phase 10 — FUN_0026e4: Buffer-Copy, nicht Task-Dispatcher
+
+**FUN_0026e4** kopiert 6 Bytes aus `DAT_00d63e` (XRAM2) in einen
+DMA-Buffer via PEC-Channel-Zeiger bei ESFR `0xF646`.
+
+```
+r14 = *(ESFR 0xF646)                ← PEC Schreibzeiger
+Loop 6×: *r14++ = DAT_00d63e[i]     ← 6 Bytes kopieren
+control_block[0x5B] = 9
+control_block[0x5E] = DAT_00d648
+control_block[0x1F] = DAT_00d649
+```
+
+**Architektur-Korrektur:**
+
+FUN_002616/FUN_0026e4 gehören zur K-Line/UART-Kommunikation, nicht zur
+ECU-Motorsteuerung. Die periodischen Regelungs-Tasks (Zündung, Einspritzung,
+Idle-Control) laufen in den **Timer-ISRs** aus der IVT — nicht in der Haupt-Loop.
+
+Das erklärt warum die Idle-Control-Funktionen (`FUN_020f60`, `FUN_0216ce` etc.)
+nicht von FUN_002616 aus aufgerufen werden.
+
+**Neue Priorisierung:**
+Die 7 aktiven ISRs aus der IVT müssen als nächstes analysiert werden.
+Dort liegt die eigentliche ECU-Regelungslogik.
+
+---
+
+## Phase 11 — FUN_0005ac & FUN_0007c6: Bootloader-Check & Timer-Init
+
+### FUN_0005ac — Bootloader-Trigger-Check
+Liest einen gespeicherten Wert (via FUN_002df0 + FUN_000472) und prüft
+ob Offset 14 des Puffers == `0x10EF` (Bootloader-Magic-Value):
+- JA → `DAT_00d853 = 0x10EF` → Bootloader-Modus aktiviert
+- NEIN → `DAT_00d853 = 0x0000` → Normalbetrieb
+
+### FUN_0007c6 — Timer-Vorkonfiguration (T4, T6)
+Konfiguriert zwei Timer, startet sie aber NICHT (T4R=0, T6R=0):
+
+| Timer | Register | Wert | Prescaler | Input-Freq | Max-Periode |
+|---|---|---|---|---|---|
+| GPT1 T4 | T4CON (FF44h) | 0x0042 | /32 | 1.25 MHz | 52.4 ms |
+| GPT2 T6 | T6CON (FF48h) | 0x0041 | /8  | 5.0 MHz  | 13.1 ms |
+
+### ISR-Zuordnung vollständig aufgelöst (mit Datenblatt)
+
+| IVT-Adresse | Interrupt | Peripheral | ISR-Funktion | Bedeutung |
+|---|---|---|---|---|
+| `0x00E8` | CC26INT | CAPCOM Register 26 | `FUN_022b5c` | Output-Compare/Capture |
+| `0x00EC` | CC27INT | CAPCOM Register 27 | `FUN_022d24` | Output-Compare/Capture |
+| `0x00F0` | CC28INT | CAPCOM Register 28 | `FUN_0040f0` | Output-Compare/Capture |
+| `0x00F8` | T8INT   | CAPCOM Timer 8     | `FUN_02afe4` | **Basis-Timer Overflow** |
+| `0x0100` | XP0INT  | CAN1 Interface     | `FUN_02a0e4` | CAN-Bus Kommunikation |
+| `0x0110` | CC29INT | CAPCOM Register 29 | `FUN_027a5c` | Output-Compare/Capture |
+| `0x011C` | S0TBINT | ASC0 TX-Buffer     | `FUN_02cd70` | UART0 Sende-Buffer |
+
+**Interpretation:**
+- CC26-CC28: CAPCOM Output-Compare → Zündzeitpunkt, Einspritzung, Drehzahl-Messung
+- T8INT (FUN_02afe4): CAPCOM Timer 8 Overflow → wahrscheinlich der Task-Trigger (setzt DAT_00d863)
+- CAN1: Dashboard-Kommunikation oder externe Schnittstelle
+- S0TBINT: UART0 Senden (Empfang wird gepollt in FUN_002616)
+
+**CAPCOM Timer 8** ist der Basis-Takt für die CAPCOM-Einheit. Sein Overflow-ISR
+(FUN_02afe4) ist höchstwahrscheinlich der Task-Trigger der `DAT_00d863` setzt.
+
+---
+
+## Phase 12 — ISR-Wrapper-Muster & Idle-Control-Einstieg
+
+### Universelles ISR-Wrapper-Muster (verifiziert)
+
+Alle ISRs des ST10F269 in dieser Firmware verwenden identisches Muster:
+```
+push r0 → save CP context (scxt) → push/restore DPP0+DPP2 →
+calls [eigentlicher Handler] → pop DPP2/DPP0/CP/r0 → reti
+```
+
+Jeder ISR hat eine eigene Register-Bank (separates CP via scxt):
+
+| ISR-Funktion | Register-Bank | Eigentlicher Handler |
+|---|---|---|
+| `FUN_022b5c` (CC26) | `0xF854` | `FUN_022b84` |
+| `FUN_02afe4` (T8)   | `0xF934` | `FUN_02b00c` |
+
+### FUN_01963e — Idle-Control-Einstieg
+
+Aufgerufen von genau einer Stelle: `0x02ed9a` (Task-Dispatcher unbekannt).
+
+```
+calls FUN_02f57c    ← Sensor-Vorbereitungs-Funktion (liest DAT_00dc75)
+calls FUN_020f60    ← Idle Control Task
+rets
+```
+
+`FUN_02f57c` bereitet Sensor-Achswerte für die Idle-Tabellen-Lookups vor.
+Die aufrufende Funktion bei `0x02ed9a` ist der Task-Dispatcher — nächste Priorität.
+
+---
+
+## Phase 13 — Vollständige Software-Architektur aufgedeckt
+
+### Kritische Korrektur: 0x10EF ist "Application Valid"-Flag
+
+`DAT_00d853 == 0x10EF` bedeutet NICHT Bootloader-Modus, sondern **Normalbetrieb**.
+- `== 0x10EF` → `FUN_018046` (Haupt-ECU-Applikation) ← NORMALBETRIEB
+- `!= 0x10EF` → K-Line Diagnose-/Programmier-Modus (FUN_003058 + FUN_002616)
+
+### T8 ISR macht nur Zähler-Inkrement
+
+`FUN_02b00c` inkrementiert nur `DAT_00d91d` (T8-Tick-Counter). `DAT_00d863`
+wird von woanders gesetzt. Der zweite ISR-Wrapper ab `0x02b018` speichert
+zusätzlich MDC/MDL/MDH (MAC-Einheit) und ruft `FUN_02b04e` auf.
+
+### FUN_02ebdc — Haupt-Task-Dispatcher (in FUN_018046)
+
+Aufgerufen von `FUN_018046:01819a`. Enthält mehrere getrennte Sub-Routinen:
+
+| Adresse | Funktion |
 |---|---|
-| `0x006b74` | Tabellen-Lookup via `FUN_01a67e` mit Sensor `DAT_00dc7f` → `DAT_00d8b9` |
-| `0x006b95` | Initialisierungswert für `DAT_00d891`, `DAT_00d8b1`, `DAT_00d8b3` |
-| `0x00704d` | Direkt in `DAT_00d8bf` (Idle-Konfigurations-Flag) |
+| `0x02ebdc` | Init: 10 Funktionen + XRAM2 löschen (0xD058–0xD1F8) |
+| `0x02ec24` | Task-Gruppe 1: periodische Tasks |
+| `0x02ec8a` | Task-Gruppe 2: inkl. `FUN_019660` (Idle-Initialisierung) |
+| `0x02ecec` | Konditional-Task: prüft `DAT_00d703` |
+| `0x02ecfe` | Sensor-Conditional: `DAT_00d929`, `DAT_00dc89`, `DAT_00db5a` |
+| `0x02ed52` | Kurzcheck: `DAT_00dc89` |
+| `0x02ed6a` | **Haupt-Tasks**: inkl. `FUN_01963e` (Idle-Control) |
 
-**IAC Stepper Startpositionen aus Flash:**
+**Idle-Control-Bedingung:** `FUN_01963e` wird nur aufgerufen wenn `DAT_00d703 != 1`.
+`DAT_00d703` ist das Idle-Control-Enable-Flag.
 
-| Flash-Adresse | Ziel RAM | Bedeutung |
-|---|---|---|
-| `DAT_00e001` | `DAT_00d8e7` | IAC Kanal 1 Default-Startposition |
-| `DAT_00e003` | `DAT_00d8e9` | IAC Kanal 2 Default-Startposition |
-| `DAT_00e005` | `DAT_00d8eb` | IAC Kanal 3 Default-Startposition |
-
-Diese Werte sind direkt kalibrierbar — in Ghidra als `word` definieren.
-
-**Fuel Trim Grenzen werden auf 0 initialisiert** — echte Werte kommen später
-aus noch unbekannter Quelle (Write-Zugriffe auf `DAT_00d8f3`/`DAT_00d8f5` suchen).
-
-**Sensor-Datenblock identifiziert:**
-RAM `0x00dc69`–`0x00dc85` = zusammenhängender Block mit 13 Sensor-Kanälen + Status-Flag.
-`DAT_00dc6d` (Sensor 1) und `DAT_00dc75` (Sensor 2) sind Kanäle 3 und 5 in diesem Block.
-
----
-
-### Phase 10 — Kern-Zustandsautomat & Idle-Enable-Tabelle entdeckt (FUN_0211f6)
-
-**FUN_0211f6 ist der Kern-Zustandsautomat** für den Idle-Modus — nicht nur
-Sensor-Vorverarbeitung. Implementiert eine Switch-Table mit 7 Zuständen (0–6)
-via indirektem Sprung:
+### Vollständige ECU-Architektur
 
 ```
-Switch-Tabelle: 0x007ec  (7 × word = 14 Bytes)
-Modus-Variable: DAT_00d893
-Modus-Setter:   FUN_02142e (Parameter = neuer Zustand)
+FUN_002582 (Applikations-Einstieg):
+  ├── DAT_00d853 == 0x10EF? → FUN_018046 (NORMALBETRIEB)
+  │     └── FUN_02ebdc (Task-Dispatcher)
+  │           ├── Init: XRAM2 Init, Peripherie-Setup
+  │           ├── Tasks: Zündung, Einspritzung, Sensoren
+  │           ├── FUN_019660 → FUN_020e42 (Idle-Init)
+  │           └── FUN_01963e → FUN_02f57c + FUN_020f60 (Idle-Control)
+  │
+  └── DAT_00d853 != 0x10EF? → K-Line Modus
+        └── FUN_002616 (UART0-Polling, Diagnose)
+
+ISR-Ebene (immer aktiv):
+  T8 Overflow → DAT_00d91d++ (Tick-Counter)
+  CC26/27/28  → Zündung / Einspritzung (FUN_022b84, etc.)
+  CC29        → Drehzahl / Sync
+  CAN1        → Dashboard
+  S0TB        → UART0 Senden
 ```
-
-**Neu entdeckte Tabelle `DAT_00707e` — Idle Enable Table:**
-```
-Tabelle:  0x00707e  (20 Einträge, interpoliert via FUN_01a7ee)
-Achsen:   DAT_00dc6d, DAT_00dc75
-Ergebnis: DAT_00d8c1  ← das ist das Idle-Enable-Flag!
-```
-Diese Tabelle bestimmt ob Idle überhaupt aktiv ist. Direkt relevant für
-das Backfire-Problem — wenn die Tabellenwerte falsch sind, schaltet die
-ECU im falschen Moment in/aus dem Idle-Modus.
-
-**Neu entdeckte Flash-Einzelwerte:**
-
-| Adresse | Ziel RAM | Verwendung |
-|---|---|---|
-| `DAT_006b97` | `DAT_00d8b9` | Idle-Schwellen-Initialisierungswert |
-| `DAT_006bbf` | `DAT_00d8b5` | Timeout/Zähler-Wert (2× verwendet) |
-| `DAT_006bc1` | `DAT_00d8b7` | Kalibrierparameter am Modus-Ende |
-
-**Ghidra-Problem:** Bytes `0x021248`–`0x0212df` sind nicht disassembliert
-(erscheinen als `??`). Das sind Zustands-Handler 2–4 der Switch-Table.
-Lösung: In Ghidra zu `0x021248` → Rechtsklick → Disassemble.
-
----
-
-### Phase 11 — Switch-Table, K-Line Handler & Zustandsübergänge präzisiert
-
-**Switch-Table bei `0x007ec`:**
-Liegt eingebettet in `FUN_0007e2`. Ghidra markiert sie als `switchdataD_0007ec`.
-In Ghidra zu `0x0007ec` → `word[7]` definieren → gibt 7 Handler-Adressen für
-die 7 Idle-Zustände.
-
-**FUN_0007e2 ist der K-Line Diagnose-Handler:**
-Enthält ISO 9141 / KWP2000 Fast-Init Sequenz:
-- Hardware-Timer T5 für Timing
-- Port P3 Bit 11 für K-Line Signal
-- Sync-Bytes: `0x55` (KWP2000 Sync), `0x4A` (Komplementbyte), `0x56` (Antwort)
-- TuneECU / IAW-Reader kommunizieren über diese Funktion
-
-**FUN_0211f6 Zustandsübergänge vollständig:**
-
-| Modus | Bedingung für Übergang |
-|---|---|
-| 1→2 | `DAT_00db4b==1` AND `DAT_00db0a==0` AND `DAT_00d8b9==0` |
-| 2→7 | RPM-Schwelle `DAT_00d891` erreicht |
-| 3→4 | Timer `DAT_00d8b5` abgelaufen |
-| 4→5 | `DAT_00d8c1` aktiv AND Bit 3 in `DAT_00d8ad` |
-| 5→6 | Fehler in `FUN_021536` |
-| →3/4 | Timer-basierter Rückfall |
-
-**Tabelle `0x00707e` Aktivierungsbedingung:**
-Wird nur berechnet wenn `DAT_00d8c1 == 0xFFFF` AND Bit 3 in `DAT_00d8ad` gesetzt.
-Das ist eine Hysterese — die Tabelle aktualisiert sich nur bei vollem Idle-Enable.
-
-**DAT_00707e noch zu lesen:**
-In Ghidra `word[20]` definieren um echte Tabellenwerte zu sehen.
