@@ -1,3 +1,25 @@
+---
+title: AD-Benutzerkonten automatisiert aus SharePoint erstellen
+order: 1
+category: IPA · AIP Plus
+summary: Individuelle praktische Arbeit (Note 4.8) – automatisiertes Erstellen von Active-Directory-Benutzerkonten mit PowerShell auf Basis einer bestehenden SharePoint-Liste.
+tags: [PowerShell, Active Directory, SharePoint, Automatisierung]
+
+# Kennzahl-Kacheln oben auf der Projektseite (die erste ist farbig)
+facts:
+  - label: Bewertung
+    value: Note 4.8
+    note: IPA, Lehrabschluss
+  - label: Betrieb
+    value: AIP Plus
+    note: Pratteln
+  - label: Technologie
+    value: PowerShell
+    note: AD + SharePoint
+  - label: Danach
+    value: Weiterentwickelt
+    note: über die IPA hinaus
+---
 # Active Directory automatisieren: Meine IPA
 
 *Ein PowerShell-Tool, das Benutzerkonten im Active Directory selbstständig anlegt, anpasst und deaktiviert, zuerst vollautomatisch aus SharePoint, später auch per CSV-Import für den Support.*
