@@ -1,0 +1,16 @@
+{%- assign s = include.section -%}
+{%- assign body = s.content | strip -%}
+<section class="card span-{{ s.width | default: 'full' }}" id="{{ s.title | slugify }}">
+  <h2 class="card-title">{{ s.title }}</h2>
+
+  {% case s.type %}
+    {% when "timeline" %}{% include cv/timeline.html items=s.items %}
+    {% when "skills" %}{% include cv/skills.html items=s.items %}
+    {% when "languages" %}{% include cv/languages.html items=s.items %}
+    {% when "projects" %}{% include cv/projects.html %}
+  {% endcase %}
+
+  {% if body != "" %}
+  <div class="prose">{{ body | markdownify }}</div>
+  {% endif %}
+</section>

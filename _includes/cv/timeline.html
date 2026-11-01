@@ -1,0 +1,32 @@
+<div class="timeline">
+  {% for item in include.items %}
+  <div class="tl-item">
+    <div class="tl-head">
+      <p class="role">{{ item.role | markdownify | remove: '<p>' | remove: '</p>' | strip }}</p>
+      {% if item.date %}<span class="date">{{ item.date }}</span>{% endif %}
+    </div>
+    {% if item.org %}<p class="org">{{ item.org }}</p>{% endif %}
+    {% if item.points %}
+    <ul class="list{% if item.columns == 2 %} list-2col{% endif %}">
+      {% for point in item.points %}
+        {% if point.text %}
+        <li>{{ point.text | markdownify | remove: '<p>' | remove: '</p>' | strip }}
+          {% if point.sub %}
+          <ul class="list sub">
+            {% for sub in point.sub %}<li>{{ sub | markdownify | remove: '<p>' | remove: '</p>' | strip }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+        </li>
+        {% else %}
+        <li>{{ point | markdownify | remove: '<p>' | remove: '</p>' | strip }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if item.project %}
+    {% assign linked = site.projekte | where: "slug", item.project | first %}
+    {% if linked %}<a class="more" href="{{ linked.url | relative_url }}">Projekt im Detail<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>{% endif %}
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>

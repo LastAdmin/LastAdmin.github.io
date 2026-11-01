@@ -1,0 +1,6 @@
+{%- assign home = site.pages | where: "url", "/" | first -%}
+{%- assign photo = include.photo | default: home.photo -%}
+<span class="avatar {{ include.class }}" aria-hidden="true">
+  <span class="initials">{{ site.initials }}</span>
+  {%- if photo %}<img src="{{ photo | relative_url }}" alt="" onerror="this.remove()">{% endif -%}
+</span>

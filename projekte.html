@@ -1,0 +1,28 @@
+---
+layout: default
+title: Projekte
+permalink: /projekte/
+description: Berufliche und private IT-Projekte von Yannick Morgenthaler im Detail.
+---
+
+<header class="card page-head span-full">
+  <p class="eyebrow">Portfolio</p>
+  <h1 class="name">Projekte</h1>
+  <p class="lead">Ausgewählte berufliche und private Projekte, mit Ausgangslage, Umsetzung und Ergebnis.</p>
+</header>
+
+<div class="project-grid span-full">
+{% assign projects = site.projekte | sort: "order" %}
+{% for p in projects %}
+  <a class="card project-card" href="{{ p.url | relative_url }}">
+    <div class="project-card-head">
+      <span class="badge">{% if p.order < 10 %}0{% endif %}{{ p.order }}</span>
+      {% if p.category %}<span class="project-cat">{{ p.category }}</span>{% endif %}
+    </div>
+    <h2 class="role">{{ p.title }}</h2>
+    <p class="project-sum">{{ p.summary }}</p>
+    {% if p.tags %}<div class="chips">{% for t in p.tags limit: 4 %}<span class="chip">{{ t }}</span>{% endfor %}</div>{% endif %}
+    <span class="more">Details ansehen<svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+  </a>
+{% endfor %}
+</div>

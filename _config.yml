@@ -1,28 +1,39 @@
-title: Yannick Morgenthaler
-tagline: Macher von Dingen — Code, Hardware und alles dazwischen.
-description: >-
-  Persönliches Portfolio. Code-Projekte, Hardware-Bauten und ein laufendes
-  Protokoll dessen, woran ich gerade arbeite.
-author: Yannick Morgenthaler
-email: yannick.morgenthaler@4058.net
-github_username: LastAdmin
+# ==========================================================
+#  Grundeinstellungen der Webseite
+#  Nach Änderungen an dieser Datei den lokalen Server neu starten.
+# ==========================================================
 
-url: "https://lastadmin.github.io"
+title: Yannick Morgenthaler
+description: Portfolio und Lebenslauf von Yannick Morgenthaler – Informatiker EFZ Systemtechnik
+lang: de-CH
+url: https://lastadmin.github.io
 baseurl: ""
 
+# Initialen, falls kein Foto vorhanden ist
+initials: YM
+
 markdown: kramdown
-highlighter: rouge
-permalink: /:title/
+kramdown:
+  input: GFM
+  smart_quotes: sbquo,lsquo,bdquo,ldquo
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
 
 collections:
-  projects:
+  # Abschnitte des Lebenslaufs (werden auf der Startseite angezeigt)
+  lebenslauf:
+    output: false
+  # Projekte (erhalten je eine eigene Detailseite)
+  projekte:
     output: true
-    permalink: /projects/:path/
+    permalink: /projekte/:name/
 
 defaults:
   - scope:
       path: ""
-      type: projects
+      type: projekte
     values:
       layout: project
 
@@ -31,9 +42,4 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
-  - .sass-cache
-  - .jekyll-cache
-  - node_modules
-
-sass:
-  style: compressed
+  - .DS_Store

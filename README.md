@@ -1,105 +1,93 @@
-# LastAdmin.github.io
+# Portfolio – Yannick Morgenthaler
 
-Persönliches Portfolio. Jekyll-Seite, gehostet auf GitHub Pages — kein
-Build-Schritt lokal nötig, GitHub kompiliert bei jedem Push.
+Persönliche Portfolio-Webseite mit Lebenslauf und Projekt-Detailseiten.
+Läuft auf **GitHub Pages** mit Jekyll – alle Inhalte werden in Markdown-Dateien gepflegt.
 
-Live unter: https://lastadmin.github.io
+## Wo steht was?
 
-## Ein Projekt hinzufügen
+| Datei / Ordner | Inhalt |
+| --- | --- |
+| `index.md` | Kopfbereich (Name, Rolle, Status, Kontakt), Kennzahl-Kacheln und Profiltext |
+| `_lebenslauf/*.md` | Je ein Abschnitt des Lebenslaufs (Berufserfahrung, Ausbildung, Skills …) |
+| `_projekte/*.md` | Je ein Projekt mit eigener Detailseite unter `/projekte/<dateiname>/` |
+| `assets/img/` | Bilder; das Profilfoto heisst `foto.jpg` |
+| `_config.yml` | Titel, Beschreibung, URL der Seite |
+| `_layouts/`, `_includes/`, `assets/css/main.css` | Design und Vorlagen (für Inhalte nicht nötig) |
+| `_referenz/` | Ursprünglicher HTML-Lebenslauf (wird nicht veröffentlicht) |
 
-1. Neue Datei in `_projects/` anlegen, z. B. `_projects/mein-ding.md`
-2. Front Matter aus einem bestehenden Projekt kopieren und anpassen
-3. Inhalt in Markdown schreiben
-4. Bilder in `assets/images/projects/` ablegen und referenzieren als
-   `/assets/images/projects/dein-bild.jpg`
-5. Committen und pushen — die Seite wird in ca. 30 Sekunden neu gebaut
+## Lebenslauf-Abschnitte (`_lebenslauf/`)
 
-Front-Matter-Felder:
-
-| Feld       | Pflicht | Beispiel                                          |
-|------------|---------|---------------------------------------------------|
-| `title`    | ja      | `Mein Ding`                                       |
-| `category` | ja      | `Code` · `Web` · `Hardware` · `Motorrad` · `Elektronik` · `Texte` |
-| `date`     | ja      | `2026-06-16` (steuert die Reihenfolge)            |
-| `summary`  | ja      | Einzeiler, der auf der Karte erscheint            |
-| `status`   | nein    | `Live`, `Laufend`, `Archiviert`                   |
-| `tech`     | nein    | YAML-Liste: `[Python, Postgres]`                  |
-| `cover`    | nein    | `/assets/images/projects/ding.jpg`                |
-| `repo`     | nein    | `https://github.com/...`                          |
-| `url_live` | nein    | `https://...`                                     |
-
-Eine neue `category` einzuführen ist gratis — sie erscheint automatisch
-als Filter-Chip auf der Projektseite. Für eine eigene Farbe eine Regel
-`.project-category.deine-kat` in `assets/css/style.css` ergänzen.
-
-## Ein Projekt mit mehreren Markdown-Dateien
-
-Für grössere Projekte (Restauration mit Phasen, ein Build mit mehreren
-Updates etc.) kannst du Unterseiten anlegen. Das Hauptprojekt zeigt
-automatisch ein Kapitelverzeichnis, jede Unterseite einen „Zurück"-Link
-zum Hauptprojekt sowie Vor/Zurück-Navigation zwischen den Kapiteln. Auf
-der Projektübersicht erscheinen nur die Hauptprojekte.
-
-**Konvention:**
-
-```
-_projects/
-  motorcycle-restoration.md          ← Hauptprojekt
-  motorcycle-restoration/            ← Ordner mit gleichem Namen
-    01-demontage.md                  ← Kapitel
-    02-motor.md
-    03-elektrik.md
-```
-
-Im Front Matter jedes Kapitels:
+Jede Datei hat oben einen Kopf zwischen `---`:
 
 ```yaml
 ---
-title: Phase 1 — Demontage
-parent: motorcycle-restoration   # Dateiname (ohne .md) des Hauptprojekts
-order: 1                         # Reihenfolge im Kapitelverzeichnis
-date: 2025-09-15                 # optional, eigenes Datum pro Kapitel
-summary: Einzeiler fürs Verzeichnis.
+title: Weiterbildungen   # Überschrift der Karte
+order: 30                # Reihenfolge (klein = weiter oben)
+width: half              # full | half | third  (Breite der Karte)
+type: timeline           # optional: timeline | skills | languages | projects
 ---
 ```
 
-Das Hauptprojekt selbst braucht *kein* zusätzliches Feld — es ist alles,
-was kein `parent:` gesetzt hat. Die URLs werden automatisch verschachtelt:
-`/projects/motorcycle-restoration/` für das Hauptprojekt,
-`/projects/motorcycle-restoration/01-demontage/` für ein Kapitel.
+- **Ohne `type`**: Der Markdown-Text unter dem Kopf wird angezeigt (Listen, Absätze, **fett** …).
+  In Listen erscheint `*kursiver Text*` als graue Zusatzinfo, z.B. `*2020 · Basel*`.
+- **`timeline`**: Einträge unter `items:` mit `role`, `date`, `org`, `columns` und `points`
+  (siehe `10-berufserfahrung.md`). Mit `project: <dateiname>` erscheint ein Link zum Projekt.
+- **`skills`**: Kacheln mit `name`, `detail`, `core: true` für Kernkompetenzen.
+- **`languages`**: Sprachen mit `name`, `level`, `percent`, `note`.
+- **`projects`**: Zeigt automatisch alle Projekte aus `_projekte/`.
 
-Ein vollständiges Beispiel liegt unter `_projects/motorcycle-restoration*`.
+Neuer Abschnitt = neue `.md`-Datei im Ordner anlegen. Abschnitt entfernen = Datei löschen.
+Zwei `half`- oder drei `third`-Karten hintereinander stehen nebeneinander.
 
-## Foto von dir einfügen
+## Projekte (`_projekte/`)
 
-In `index.html` ist im Hero-Bereich ein Avatar-Platzhalter (die zwei
-Initialen „YM" in einem gestrichelten Kreis). Um dein Foto einzufügen:
+```yaml
+---
+title: Eigene VMware-ESXi-Testumgebung
+order: 3                      # Nummer und Reihenfolge
+category: Privates Projekt · Infrastruktur
+summary: Ein bis zwei Sätze für die Übersicht.
+tags: [VMware ESXi, Backup]
+facts:                        # Kennzahl-Kacheln (optional)
+  - label: Hypervisor
+    value: VMware ESXi
+links:                        # optional
+  - label: GitHub
+    url: https://github.com/...
+---
 
-1. Lege deine Bilddatei unter `assets/images/me.jpg` ab
-2. In `index.html` das `<span class="avatar-placeholder">YM</span>`
-   ersetzen durch:
-   ```html
-   <img src="{{ '/assets/images/me.jpg' | relative_url }}" alt="Foto von {{ site.author }}">
-   ```
-3. Die Zeile `<p class="avatar-caption">Foto folgt</p>` kannst du dann
-   löschen
+## Ausgangslage
+Text …
 
-## Restliche Inhalte bearbeiten
+## Umsetzung
+Text, Listen, Tabellen, Bilder: ![Beschreibung](/assets/img/projekte/bild.jpg)
+```
 
-- `index.html` — Text der Startseite
-- `resume.html` — Lebenslauf-Inhalte
-- `_config.yml` — Titel, Tagline, E-Mail, GitHub-Benutzername
-- `assets/css/style.css` — komplettes Styling
+Jede `## Überschrift` wird zu einem eigenen Panel. Abschnitte, die nur einen
+`<!-- Kommentar -->` enthalten, werden ausgeblendet – so können Notizen stehen
+bleiben, bis der Text fertig ist.
 
-## Lokale Vorschau (optional)
+## Veröffentlichen
 
-GitHub Pages baut beim Push, das hier brauchst du nur, wenn du Änderungen
-vor dem Push ansehen willst.
+1. Repository `LastAdmin.github.io` auf GitHub anlegen und den Inhalt pushen.
+2. Unter **Settings → Pages** als Quelle „Deploy from a branch“, Branch `main`, Ordner `/ (root)` wählen.
+3. Nach 1–2 Minuten ist die Seite unter <https://lastadmin.github.io> erreichbar.
+
+Jede Änderung, die auf `main` gepusht wird, ist kurz danach online.
+Markdown-Dateien lassen sich auch direkt im Browser auf github.com bearbeiten.
+
+## Lokal ansehen (optional)
+
+Benötigt Ruby ≥ 3.0 (z.B. via `brew install ruby`):
 
 ```sh
-gem install bundler jekyll
 bundle install
 bundle exec jekyll serve
 ```
 
-Danach http://localhost:4000 öffnen.
+Danach <http://localhost:4000> öffnen.
+
+## Als PDF
+
+Der Knopf **PDF** oben rechts öffnet den Druckdialog. Dort „Als PDF sichern“ wählen
+und „Hintergrundgrafiken“ aktivieren, damit die farbigen Flächen mitgedruckt werden.

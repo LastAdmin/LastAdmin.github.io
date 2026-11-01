@@ -1,0 +1,7 @@
+{% for lang in include.items %}
+<div class="lang">
+  <div class="lang-head"><strong>{{ lang.name }}</strong><span class="muted">{{ lang.level }}</span></div>
+  <div class="lang-bar"><span style="width: {{ lang.percent | default: 50 }}%"></span></div>
+  {% if lang.note %}<p class="lang-note">{{ lang.note }}</p>{% endif %}
+</div>
+{% endfor %}

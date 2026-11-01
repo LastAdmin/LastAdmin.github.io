@@ -1,0 +1,49 @@
+---
+layout: default
+---
+<!-- Kopf: Foto, Name, Kontakt -->
+<header class="card hero span-full">
+  {% include avatar.html class="photo" photo=page.photo %}
+  <div>
+    <h1 class="name">{{ page.name }}</h1>
+    <div class="sub-line">
+      <span class="role-line">{{ page.role }}</span>
+      {% if page.status %}<span class="status">{{ page.status }}</span>{% endif %}
+    </div>
+    <ul class="contact">
+      {% for c in page.contact %}
+      <li>
+        <span class="ico"><svg aria-hidden="true"><use href="#i-{{ c.icon }}"/></svg></span>
+        <span>
+          <span class="k">{{ c.label }}</span>
+          {% if c.url %}<a href="{{ c.url }}"{% unless c.url contains 'mailto:' or c.url contains 'tel:' %} target="_blank" rel="noopener"{% endunless %}>{{ c.value }}</a>{% else %}{{ c.value | markdownify | remove: '<p>' | remove: '</p>' | strip }}{% endif %}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</header>
+
+<!-- Eckdaten -->
+{% if page.stats %}
+<div class="stats span-full">
+  {% for s in page.stats %}
+  <div class="card stat{% if s.accent %} stat-accent{% endif %}">
+    <div class="k">{{ s.label }}</div>
+    <div class="v">{{ s.value }}{% if s.note %}<small>{{ s.note }}</small>{% endif %}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Profil (Text aus index.md) -->
+<section class="card span-full" id="profil">
+  <h2 class="card-title">{{ page.profile_title | default: "Profil" }}</h2>
+  <div class="prose profile">{{ content }}</div>
+</section>
+
+<!-- Abschnitte aus dem Ordner _lebenslauf -->
+{% assign sections = site.lebenslauf | sort: "order" %}
+{% for section in sections %}
+  {% include cv/section.html section=section %}
+{% endfor %}

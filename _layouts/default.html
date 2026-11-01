@@ -1,13 +1,36 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="{{ site.lang | default: 'de-CH' }}">
 <head>
-  {% include head.html %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  {% seo %}
 </head>
 <body>
-  {% include nav.html %}
-  <main class="site-main">
-    {{ content }}
-  </main>
-  {% include footer.html %}
+  {% include icons.svg %}
+
+  <div class="wrap">
+    <header class="card topbar">
+      <a class="who" href="{{ '/' | relative_url }}">
+        {% include avatar.html class="avatar-sm" %}
+        <span>{{ site.title }}</span>
+      </a>
+      <nav class="nav">
+        <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} aria-current="page"{% endif %}>Lebenslauf</a>
+        <a href="{{ '/projekte/' | relative_url }}"{% if page.url contains '/projekte/' %} aria-current="page"{% endif %}>Projekte</a>
+        <button class="print-btn" type="button" onclick="window.print()" title="Seite drucken oder als PDF speichern">
+          <svg aria-hidden="true"><use href="#i-print"/></svg><span>PDF</span>
+        </button>
+      </nav>
+    </header>
+
+    <main class="bento">
+      {{ content }}
+    </main>
+
+    <footer class="footer muted">
+      © {{ 'now' | date: '%Y' }} {{ site.title }}
+    </footer>
+  </div>
 </body>
 </html>

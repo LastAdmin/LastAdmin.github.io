@@ -1,0 +1,8 @@
+<div class="skills">
+  {% for skill in include.items %}
+  <div class="skill{% if skill.core %} core{% endif %}">
+    <strong>{{ skill.name }}</strong>
+    {% if skill.detail %}<span>{{ skill.detail }}</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>

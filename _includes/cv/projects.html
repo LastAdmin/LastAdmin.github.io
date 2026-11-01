@@ -1,0 +1,12 @@
+{% assign projects = site.projekte | sort: "order" %}
+{% for p in projects %}
+<a class="project" href="{{ p.url | relative_url }}">
+  <span class="badge">{% if p.order < 10 %}0{% endif %}{{ p.order }}</span>
+  <span>
+    <span class="role">{{ p.title }}</span>
+    {% if p.category %}<span class="project-cat">{{ p.category }}</span>{% endif %}
+    <span class="project-sum">{{ p.summary }}</span>
+  </span>
+  <span class="project-go" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+</a>
+{% endfor %}

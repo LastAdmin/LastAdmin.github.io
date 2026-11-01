@@ -1,78 +1,64 @@
 ---
 layout: default
 ---
-<article class="project-detail">
-  {% if page.parent %}
-    {% assign parent = site.projects | where: "slug", page.parent | first %}
-    {% if parent %}
-      <a href="{{ parent.url | relative_url }}" class="back-link">← {{ parent.title }}</a>
-    {% else %}
-      <a href="{{ '/projects/' | relative_url }}" class="back-link">← Alle Projekte</a>
+{%- assign projects = site.projekte | sort: "order" -%}
+{%- for p in projects -%}{%- if p.url == page.url -%}{%- assign idx = forloop.index0 -%}{%- endif -%}{%- endfor -%}
+
+<a class="back span-full" href="{{ '/projekte/' | relative_url }}"><svg aria-hidden="true"><use href="#i-arrow"/></svg>Alle Projekte</a>
+
+<header class="card project-hero span-full">
+  <span class="badge badge-lg">{% if page.order < 10 %}0{% endif %}{{ page.order }}</span>
+  <div>
+    {% if page.category %}<p class="eyebrow">{{ page.category }}</p>{% endif %}
+    <h1 class="name">{{ page.title }}</h1>
+    {% if page.summary %}<p class="lead">{{ page.summary }}</p>{% endif %}
+    {% if page.tags %}
+    <div class="chips">
+      {% for t in page.tags %}<span class="chip">{{ t }}</span>{% endfor %}
+    </div>
     {% endif %}
-  {% else %}
-    <a href="{{ '/projects/' | relative_url }}" class="back-link">← Alle Projekte</a>
-  {% endif %}
-
-  <header class="project-header">
-    {% if page.category %}<span class="project-category {{ page.category | downcase | replace: ' ', '-' }}">{{ page.category }}</span>{% endif %}
-    <h1>{{ page.title }}</h1>
-    {% if page.summary %}<p class="project-summary">{{ page.summary }}</p>{% endif %}
-
-    {% if page.date or page.status or page.tech or page.repo or page.url_live %}
-    <dl class="project-meta">
-      {% if page.date %}<dt>Datum</dt><dd>{{ page.date | date: "%m.%Y" }}</dd>{% endif %}
-      {% if page.status %}<dt>Status</dt><dd>{{ page.status }}</dd>{% endif %}
-      {% if page.tech %}<dt>Stack</dt><dd>{{ page.tech | join: ", " }}</dd>{% endif %}
-      {% if page.repo %}<dt>Repo</dt><dd><a href="{{ page.repo }}" target="_blank" rel="noopener">{{ page.repo | remove: 'https://' }}</a></dd>{% endif %}
-      {% if page.url_live %}<dt>Live</dt><dd><a href="{{ page.url_live }}" target="_blank" rel="noopener">{{ page.url_live | remove: 'https://' }}</a></dd>{% endif %}
-    </dl>
-    {% endif %}
-  </header>
-
-  {% if page.cover %}
-  <img src="{{ page.cover | relative_url }}" alt="{{ page.title }}" class="project-cover">
-  {% endif %}
-
-  <div class="project-body">
-    {{ content }}
   </div>
+</header>
 
-  {%- assign children = site.projects | where: "parent", page.slug -%}
-  {%- if children.size > 0 -%}
-    {%- assign children = children | sort: "order" -%}
-    <nav class="project-chapters">
-      <h3>Kapitel</h3>
-      <ol>
-        {% for child in children %}
-          <li>
-            <a href="{{ child.url | relative_url }}">{{ child.title }}</a>
-            {% if child.summary %}<span class="chapter-summary">{{ child.summary }}</span>{% endif %}
-          </li>
-        {% endfor %}
-      </ol>
-    </nav>
-  {%- endif -%}
+{% if page.facts %}
+<div class="stats span-full">
+  {% for f in page.facts %}
+  <div class="card stat{% if forloop.first %} stat-accent{% endif %}">
+    <div class="k">{{ f.label }}</div>
+    <div class="v">{{ f.value }}{% if f.note %}<small>{{ f.note }}</small>{% endif %}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
-  {%- if page.parent -%}
-    {%- assign siblings = site.projects | where: "parent", page.parent | sort: "order" -%}
-    {%- if siblings.size > 1 -%}
-      {%- for sib in siblings -%}
-        {%- if sib.slug == page.slug -%}
-          {%- assign idx = forloop.index0 -%}
-          {%- assign prev_idx = idx | minus: 1 -%}
-          {%- assign next_idx = idx | plus: 1 -%}
-        {%- endif -%}
-      {%- endfor -%}
-      <nav class="chapter-nav">
-        {% if prev_idx >= 0 %}
-          {% assign prev = siblings[prev_idx] %}
-          <a href="{{ prev.url | relative_url }}" class="chapter-nav-link prev">← {{ prev.title }}</a>
-        {% else %}<span></span>{% endif %}
-        {% if next_idx < siblings.size %}
-          {% assign next = siblings[next_idx] %}
-          <a href="{{ next.url | relative_url }}" class="chapter-nav-link next">{{ next.title }} →</a>
-        {% endif %}
-      </nav>
-    {%- endif -%}
-  {%- endif -%}
-</article>
+{%- comment -%}
+  Jede "## Überschrift" im Markdown wird zu einem eigenen Panel.
+  Panels ohne Inhalt (nur Überschrift + Kommentar) werden ausgeblendet.
+{%- endcomment -%}
+{% assign parts = content | split: "<h2" %}
+{% for part in parts %}
+  {%- assign check = part | split: "</h2>" | last | strip_html | strip -%}
+  {%- if check == "" -%}{%- continue -%}{%- endif -%}
+  <section class="card prose panel span-full">
+    {% unless forloop.first %}<h2{% endunless %}{{ part }}
+  </section>
+{% endfor %}
+
+{% if page.links %}
+<section class="card span-full">
+  <h2 class="card-title">Links</h2>
+  <div class="chips">
+    {% for l in page.links %}<a class="chip chip-link" href="{{ l.url }}" target="_blank" rel="noopener">{{ l.label }}</a>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<nav class="pager span-full">
+  {% if idx > 0 %}{% assign prev_i = idx | minus: 1 %}{% assign prev = projects[prev_i] %}
+  <a class="card pager-prev" href="{{ prev.url | relative_url }}"><span class="k">Vorheriges Projekt</span>{{ prev.title }}</a>
+  {% else %}<span></span>{% endif %}
+  {% assign next_i = idx | plus: 1 %}{% assign next = projects[next_i] %}
+  {% if next %}
+  <a class="card pager-next" href="{{ next.url | relative_url }}"><span class="k">Nächstes Projekt</span>{{ next.title }}</a>
+  {% endif %}
+</nav>
