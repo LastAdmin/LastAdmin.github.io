@@ -41,6 +41,10 @@ Zwei `half`- oder drei `third`-Karten hintereinander stehen nebeneinander.
 
 ## Projekte (`_projekte/`)
 
+**Neues Projekt:** `_projekte/vorlage.md` kopieren, umbenennen (der Dateiname wird zur Adresse)
+und die Zeile `published: false` löschen. Die Vorlage selbst ist dank dieser Zeile unsichtbar.
+Alle Felder und Formatierungen sind darin erklärt.
+
 ```yaml
 ---
 title: Eigene VMware-ESXi-Testumgebung
