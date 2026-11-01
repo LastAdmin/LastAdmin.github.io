@@ -4,7 +4,7 @@ title: Lebenslauf
 description: Lebenslauf und Portfolio von Yannick Morgenthaler, Informatiker EFZ Systemtechnik.
 
 # ---------- Kopfbereich ----------
-name: Yannick Morgenthaler
+full_name: Yannick Morgenthaler   # "name" ist in Jekyll reserviert (= Dateiname)
 role: Informatiker EFZ Systemtechnik
 status: Verfügbar · Eintritt nach Vereinbarung
 photo: /assets/img/foto.jpg   # Foto hier ablegen (ohne Foto werden die Initialen angezeigt)

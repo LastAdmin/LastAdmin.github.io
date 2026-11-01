@@ -5,7 +5,7 @@ layout: default
 <header class="card hero span-full">
   {% include avatar.html class="photo" photo=page.photo %}
   <div>
-    <h1 class="name">{{ page.name }}</h1>
+    <h1 class="name">{{ page.full_name | default: site.title }}</h1>
     <div class="sub-line">
       <span class="role-line">{{ page.role }}</span>
       {% if page.status %}<span class="status">{{ page.status }}</span>{% endif %}
